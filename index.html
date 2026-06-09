@@ -48,9 +48,47 @@ body.timer-alert::after{
   to{opacity:1; transform:scale(1)}
 }
 
-</style></head><body><header><h1>DHG Fitness Session Builder</h1><p>Version 3 — strong buzzer, full-screen flash and vibration.</p></header><main>
-<section id="builder" class="card"><h2>Build Session</h2><div class="row"><div class="field"><label>Number attending</label><select id="attendees"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6+</option></select></div><div class="field"><label>Location</label><select id="location"><option value="outdoor" selected>Outdoor</option><option value="indoor">Indoor / Hall</option></select></div><div class="field"><label>Energy</label><select id="energy"><option value="normal" selected>Normal</option><option value="lighter">Lighter</option><option value="higher">Higher</option></select></div></div><div class="row" style="margin-top:12px"><button class="primary" onclick="buildSession()">Build 60-min Session</button><button class="secondary" onclick="showLibrary()">Activity Library</button><button class="secondary" onclick="showAdd()">Add New Activity</button>
-      <button class="dark" onclick="dhgTestAlert()">Test Buzzer / Flash</button></div><p class="small muted">The generator adds bonus activities at the end. Use Skip if you do not need them.</p></section>
+
+/* DHG v4 timer layout */
+.timer-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px;
+}
+.timer-box{
+  background:#f7f8f5;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+}
+.timer-box .label{
+  font-size:.75rem;
+  color:var(--muted);
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.round-note{
+  background:#fff8ed;
+  border:1px solid #ffe0b8;
+  border-radius:14px;
+  padding:10px;
+  margin-top:10px;
+}
+.round-buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+@media(max-width:520px){
+  .timer-grid{grid-template-columns:1fr;}
+  .round-buttons{grid-template-columns:1fr;}
+}
+
+</style></head><body><header><h1>DHG Fitness Session Builder</h1><p>Version 4 — total timer + round timer, no test buttons.</p></header><main>
+<section id="builder" class="card"><h2>Build Session</h2><div class="row"><div class="field"><label>Number attending</label><select id="attendees"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6+</option></select></div><div class="field"><label>Location</label><select id="location"><option value="outdoor" selected>Outdoor</option><option value="indoor">Indoor / Hall</option></select></div><div class="field"><label>Energy</label><select id="energy"><option value="normal" selected>Normal</option><option value="lighter">Lighter</option><option value="higher">Higher</option></select></div></div><div class="row" style="margin-top:12px"><button class="primary" onclick="buildSession()">Build 60-min Session</button><button class="secondary" onclick="showLibrary()">Activity Library</button><button class="secondary" onclick="showAdd()">Add New Activity</button></div><p class="small muted">The generator adds bonus activities at the end. Use Skip if you do not need them.</p></section>
 <section id="sessionPanel" class="hidden"><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="section-title">Session Runner</div><div id="sessionMeta" class="muted small"></div></div><button class="ghost" onclick="resetToBuilder()">Change</button></div><div class="progress"><div id="progressBar"></div></div></div><div id="activityCard" class="card"></div></section>
 <section id="libraryPanel" class="card hidden"><div class="row" style="justify-content:space-between;align-items:center"><h2>Activity Library</h2><button class="ghost" onclick="hidePanels()">Back</button></div><input id="search" placeholder="Search activities..." oninput="renderLibrary()"><div class="row" style="margin-top:8px"><button class="secondary" onclick="exportData()">Export JSON</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import JSON</button><button class="danger" onclick="resetLibrary()">Reset Library</button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)"></div><div id="libraryList"></div></section>
 <section id="addPanel" class="card hidden"><div class="row" style="justify-content:space-between;align-items:center"><h2>Add New Activity</h2><button class="ghost" onclick="hidePanels()">Back</button></div><div class="row"><div class="field"><label>Title</label><input id="newTitle" placeholder="e.g. Story Ball"></div><div class="field"><label>Section</label><select id="newSection"><option>Warm-Up Game</option><option>Light Reaction</option><option>Moderate Movement</option><option>Brain & Movement</option><option>Teamwork & Laughter</option><option>Strength & Resistance</option><option>Power & Conditioning</option><option>Lower Intensity / Reset</option><option>Maintenance Minute</option><option>Team Movement</option></select></div></div><div class="row"><div class="field"><label>Duration minutes</label><input id="newDuration" type="number" value="5"></div><div class="field"><label>Minimum people</label><input id="newMin" type="number" value="3"></div><div class="field"><label>Requires even numbers?</label><select id="newEven"><option value="false">No</option><option value="true">Yes</option></select></div></div><div class="row"><div class="field"><label>Location</label><select id="newLoc"><option value="both">Both</option><option value="outdoor">Outdoor only</option><option value="indoor">Indoor only</option></select></div><div class="field"><label>Intensity</label><select id="newIntensity"><option>low</option><option>low/moderate</option><option>moderate</option><option>moderate/high</option><option>high</option></select></div><div class="field"><label>Fun score</label><select id="newFun"><option>medium</option><option>high</option><option>low</option></select></div></div><label>Equipment</label><input id="newEquipment" placeholder="Cones, ball, bands..."><label>Rounds / Timing</label><input id="newRounds" placeholder="3 rounds x 45 seconds"><label>Setup</label><textarea id="newSetup" rows="2"></textarea><label>How to run</label><textarea id="newHow" rows="3"></textarea><label>Coaching notes</label><textarea id="newNotes" rows="2"></textarea><button class="primary" style="margin-top:12px" onclick="addActivity()">Add Activity</button></section>
@@ -1035,10 +1073,236 @@ function dhgTestAlert(){
   timerDoneAlert();
 }
 
-function renderCard(){clearInterval(timerInterval);const a=session[currentIndex],panel=document.getElementById('activityCard');if(!a){panel.innerHTML='<h2>Session complete</h2><p>Good job. You reached the end.</p><button class="primary" onclick="resetToBuilder()">Build Another Session</button>';return}remaining=(a.duration||1)*60;let badges=[a.bonus?'<span class="badge orange">Bonus / optional</span>':'',`<span class="badge">${a.section}</span>`,`<span class="badge blue">${a.intensity}</span>`,`<span class="badge">${a.duration} mins</span>`].join('');panel.innerHTML=`<div class="section-title">Card ${currentIndex+1} of ${session.length}</div><div class="big-title">${esc(a.title)}</div><div>${badges}</div><div class="info-grid"><div class="info"><b>Equipment</b>${esc(a.equipment)}</div><div class="info"><b>Rounds / timing</b>${esc(a.rounds)}</div><div class="info"><b>Setup</b>${esc(a.setup)}</div><div class="info"><b>Coaching note</b>${esc(a.notes)}</div></div><h3>How to run</h3><p>${esc(a.how)}</p><div class="timer"><div><div class="muted small">Activity Timer</div><div id="time" class="time">${formatTime(remaining)}</div></div><div><button class="secondary" onclick="startTimer()">Start</button> <button class="secondary" onclick="pauseTimer()">Pause</button> <button class="secondary" onclick="resetTimer()">Reset</button><button class="secondary" onclick="dhgTestAlert()">Test Alert</button></div></div><div class="nav-buttons"><button class="secondary" onclick="prevCard()">Back</button><button class="danger" onclick="skipCard()">Skip</button><button class="primary" onclick="nextCard()">Next</button></div><button class="ghost" onclick="replaceCard()">Replace this activity</button>`;updateProgress()}
-function updateProgress(){document.getElementById('progressBar').style.width=(session.length?(currentIndex/session.length)*100:0)+'%'}function nextCard(){currentIndex++;renderCard()}function prevCard(){if(currentIndex>0)currentIndex--;renderCard()}function skipCard(){nextCard()}
-function replaceCard(){let old=session[currentIndex],n=parseInt(document.getElementById('attendees').value,10),loc=document.getElementById('location').value,energy=document.getElementById('energy').value,used=new Set(session.map(a=>String(a.id).replace(/-\d+$/,'')));used.delete(String(old.id).replace(/-\d+$/,''));let repl=choose(old.section,n,loc,used,energy,['Brain & Movement','Teamwork & Laughter','Light Reaction','Moderate Movement','Lower Intensity / Reset']);if(repl){session[currentIndex]=repl;renderCard()}else alert('No suitable replacement found for this slot.')}
-function startTimer(){dhgUnlockAudio(); if(typeof unlockAudio==='function') unlockAudio(); clearInterval(timerInterval);timerInterval=setInterval(()=>{remaining--;if(remaining<=0){remaining=0;clearInterval(timerInterval);timerDoneAlert()}document.getElementById('time').innerText=formatTime(remaining)},1000)}function pauseTimer(){clearInterval(timerInterval)}function resetTimer(){remaining=(session[currentIndex].duration||1)*60;document.getElementById('time').innerText=formatTime(remaining)}function formatTime(s){let m=Math.floor(s/60),sec=s%60;return `${m}:${String(sec).padStart(2,'0')}`}
+
+let totalRemaining=0,roundRemaining=0,roundTotal=0,roundCount=0,currentRound=1,roundMode=false,roundLabels=[];
+
+function parseRoundInfo(a){
+  const text=(a.rounds||"").replace(/–/g,"-");
+  let info={count:0,seconds:0,labels:[]};
+
+  let m=text.match(/(\d+)(?:\s*-\s*(\d+))?\s*rounds?.*?(\d+)(?:\s*-\s*(\d+))?\s*seconds?/i);
+  if(m){
+    info.count=parseInt(m[1],10);
+    info.seconds=parseInt(m[3],10);
+  }
+
+  const rMatches=[...text.matchAll(/R(\d+)\s*:?\s*([^R]+)/gi)];
+  if(rMatches.length>=2){
+    info.count=rMatches.length;
+    info.labels=rMatches.map(x=>("R"+x[1]+": "+x[2]).trim().replace(/\s+/g," "));
+    info.seconds=Math.max(30,Math.round(((a.duration||1)*60)/info.count));
+  }
+
+  if(!info.seconds || info.count<2) return {count:0,seconds:0,labels:[]};
+  return info;
+}
+
+function initTimers(a){
+  clearInterval(timerInterval);
+  totalRemaining=(a.duration||1)*60;
+  const r=parseRoundInfo(a);
+  roundMode=r.count>1;
+  roundCount=r.count||0;
+  roundTotal=r.seconds||0;
+  roundRemaining=roundTotal;
+  currentRound=1;
+  roundLabels=r.labels||[];
+}
+
+function renderCard(){
+  clearInterval(timerInterval);
+  const a=session[currentIndex],panel=document.getElementById('activityCard');
+  if(!a){
+    panel.innerHTML='<h2>Session complete</h2><p>Good job. You reached the end.</p><button class="primary" onclick="resetToBuilder()">Build Another Session</button>';
+    return;
+  }
+
+  initTimers(a);
+
+  let badges=[
+    a.bonus?'<span class="badge orange">Bonus / optional</span>':'',
+    `<span class="badge">${a.section}</span>`,
+    `<span class="badge blue">${a.intensity}</span>`,
+    `<span class="badge">${a.duration} mins</span>`
+  ].join('');
+
+  const roundPanel = roundMode ? `
+    <div class="timer-grid">
+      <div class="timer-box">
+        <div class="label">Total Activity Time</div>
+        <div id="totalTime" class="time">${formatTime(totalRemaining)}</div>
+      </div>
+      <div class="timer-box">
+        <div class="label">Round ${currentRound} of ${roundCount}</div>
+        <div id="roundTime" class="time">${formatTime(roundRemaining)}</div>
+      </div>
+    </div>
+    <div id="roundNote" class="round-note">${esc(getRoundLabel())}</div>
+    <div class="round-buttons">
+      <button class="secondary" onclick="startTimer()">Start Round</button>
+      <button class="secondary" onclick="pauseTimer()">Pause</button>
+      <button class="secondary" onclick="resetRoundTimer()">Reset Round</button>
+    </div>
+    <div class="round-buttons">
+      <button class="secondary" onclick="prevRound()">Previous Round</button>
+      <button class="danger" onclick="skipRound()">Skip Round</button>
+      <button class="primary" onclick="nextRoundManual()">Next Round</button>
+    </div>
+  ` : `
+    <div class="timer">
+      <div>
+        <div class="muted small">Activity Timer</div>
+        <div id="totalTime" class="time">${formatTime(totalRemaining)}</div>
+      </div>
+      <div>
+        <button class="secondary" onclick="startTimer()">Start</button>
+        <button class="secondary" onclick="pauseTimer()">Pause</button>
+        <button class="secondary" onclick="resetTimer()">Reset</button>
+      </div>
+    </div>
+  `;
+
+  panel.innerHTML=`
+    <div class="section-title">Card ${currentIndex+1} of ${session.length}</div>
+    <div class="big-title">${esc(a.title)}</div>
+    <div>${badges}</div>
+    <div class="info-grid">
+      <div class="info"><b>Equipment</b>${esc(a.equipment)}</div>
+      <div class="info"><b>Rounds / timing</b>${esc(a.rounds)}</div>
+      <div class="info"><b>Setup</b>${esc(a.setup)}</div>
+      <div class="info"><b>Coaching note</b>${esc(a.notes)}</div>
+    </div>
+    <h3>How to run</h3>
+    <p>${esc(a.how)}</p>
+    ${roundPanel}
+    <div class="nav-buttons">
+      <button class="secondary" onclick="prevCard()">Back</button>
+      <button class="danger" onclick="skipCard()">Skip Activity</button>
+      <button class="primary" onclick="nextCard()">Next Activity</button>
+    </div>
+    <button class="ghost" onclick="replaceCard()">Replace this activity</button>
+  `;
+  updateProgress();
+}
+
+function getRoundLabel(){
+  if(!roundMode) return "";
+  if(roundLabels[currentRound-1]) return roundLabels[currentRound-1];
+  return `Round ${currentRound} of ${roundCount}. Press Start Round when ready.`;
+}
+
+function updateTimerDisplay(){
+  const totalEl=document.getElementById('totalTime');
+  if(totalEl) totalEl.innerText=formatTime(totalRemaining);
+  const roundEl=document.getElementById('roundTime');
+  if(roundEl) roundEl.innerText=formatTime(roundRemaining);
+  const noteEl=document.getElementById('roundNote');
+  if(noteEl) noteEl.innerText=getRoundLabel();
+  const labels=document.querySelectorAll('.timer-box .label');
+  if(roundMode && labels.length>1) labels[1].innerText=`Round ${currentRound} of ${roundCount}`;
+}
+
+function updateProgress(){
+  document.getElementById('progressBar').style.width=(session.length?(currentIndex/session.length)*100:0)+'%';
+}
+
+function nextCard(){currentIndex++;renderCard()}
+function prevCard(){if(currentIndex>0)currentIndex--;renderCard()}
+function skipCard(){nextCard()}
+
+function replaceCard(){
+  let old=session[currentIndex],
+      n=parseInt(document.getElementById('attendees').value,10),
+      loc=document.getElementById('location').value,
+      energy=document.getElementById('energy').value,
+      used=new Set(session.map(a=>String(a.id).replace(/-\d+$/,'')));
+  used.delete(String(old.id).replace(/-\d+$/,''));
+  let repl=choose(old.section,n,loc,used,energy,['Brain & Movement','Teamwork & Laughter','Light Reaction','Moderate Movement','Lower Intensity / Reset']);
+  if(repl){session[currentIndex]=repl;renderCard()}else alert('No suitable replacement found for this slot.');
+}
+
+function startTimer(){
+  dhgUnlockAudio();
+  if(typeof unlockAudio==='function') unlockAudio();
+  clearInterval(timerInterval);
+
+  timerInterval=setInterval(()=>{
+    if(roundMode){
+      if(totalRemaining>0) totalRemaining--;
+      if(roundRemaining>0) roundRemaining--;
+
+      if(roundRemaining<=0){
+        roundRemaining=0;
+        clearInterval(timerInterval);
+        timerDoneAlert();
+        if(currentRound<roundCount){
+          currentRound++;
+          roundRemaining=roundTotal;
+          setTimeout(updateTimerDisplay,250);
+        }
+      }
+    }else{
+      if(totalRemaining>0) totalRemaining--;
+      if(totalRemaining<=0){
+        totalRemaining=0;
+        clearInterval(timerInterval);
+        timerDoneAlert();
+      }
+    }
+    updateTimerDisplay();
+  },1000);
+}
+
+function pauseTimer(){clearInterval(timerInterval)}
+
+function resetTimer(){
+  clearInterval(timerInterval);
+  totalRemaining=(session[currentIndex].duration||1)*60;
+  if(roundMode){
+    currentRound=1;
+    roundRemaining=roundTotal;
+  }
+  updateTimerDisplay();
+}
+
+function resetRoundTimer(){
+  clearInterval(timerInterval);
+  roundRemaining=roundTotal;
+  updateTimerDisplay();
+}
+
+function nextRoundManual(){
+  clearInterval(timerInterval);
+  if(!roundMode) return;
+  if(currentRound<roundCount){
+    currentRound++;
+    roundRemaining=roundTotal;
+  }else{
+    roundRemaining=0;
+  }
+  updateTimerDisplay();
+}
+
+function prevRound(){
+  clearInterval(timerInterval);
+  if(!roundMode) return;
+  if(currentRound>1){
+    currentRound--;
+    roundRemaining=roundTotal;
+  }
+  updateTimerDisplay();
+}
+
+function skipRound(){
+  nextRoundManual();
+}
+
+function formatTime(s){
+  s=Math.max(0,Math.round(s||0));
+  let m=Math.floor(s/60),sec=s%60;
+  return `${m}:${String(sec).padStart(2,'0')}`;
+}
+
 function resetToBuilder(){clearInterval(timerInterval);document.getElementById('sessionPanel').classList.add('hidden');document.getElementById('builder').classList.remove('hidden')}function hidePanels(){document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('builder').classList.remove('hidden')}function showLibrary(){document.getElementById('builder').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('libraryPanel').classList.remove('hidden');renderLibrary()}function showAdd(){document.getElementById('builder').classList.add('hidden');document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.remove('hidden')}
 function renderLibrary(){let q=(document.getElementById('search').value||'').toLowerCase(),list=document.getElementById('libraryList');let rows=activities.filter(a=>!q||(a.title+a.section+a.equipment+a.how).toLowerCase().includes(q));rows.sort((a,b)=>a.section.localeCompare(b.section)||a.title.localeCompare(b.title));list.innerHTML=rows.map(a=>`<div class="list-item"><b>${esc(a.title)}</b><br><span class="badge">${a.section}</span><span class="badge">${a.duration} mins</span><span class="badge">${a.locations.join(', ')}</span><div class="small muted">${esc(a.how)}</div></div>`).join('')}
 function addActivity(){let title=document.getElementById('newTitle').value.trim();if(!title)return alert('Please add a title.');let locVal=document.getElementById('newLoc').value;let a={id:title.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now(),title,section:document.getElementById('newSection').value,duration:parseInt(document.getElementById('newDuration').value,10)||5,rounds:document.getElementById('newRounds').value,intensity:document.getElementById('newIntensity').value,locations:normaliseLocation(locVal),min:parseInt(document.getElementById('newMin').value,10)||1,max:99,requires_even:document.getElementById('newEven').value==='true',equipment:document.getElementById('newEquipment').value,setup_time:'medium',fun:document.getElementById('newFun').value,setup:document.getElementById('newSetup').value,how:document.getElementById('newHow').value,notes:document.getElementById('newNotes').value};activities.push(a);saveActivities();alert('Activity added.');showLibrary()}
