@@ -96,7 +96,14 @@ body.timer-alert::after{
 .equipment-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 @media(max-width:520px){.equipment-actions{grid-template-columns:1fr}}
 
-</style></head><body><header><h1>DHG Fitness Session Builder</h1><p>Version 7 — build fixed, full round instructions and equipment checklist.</p></header><main>
+
+/* DHG v8 header + checklist + round controls */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.header-sub{margin:4px 0 0;opacity:.9;font-size:.9rem}
+.header-checklist{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);padding:8px 11px;border-radius:999px;font-size:.82rem;white-space:nowrap}
+.round-complete{background:#eef4ee;border:1px solid var(--border);border-radius:14px;padding:10px;margin-top:10px;color:#245c44;font-weight:700}
+
+</style></head><body><header><div class="topbar"><div><h1>DHG Fitness Session Builder</h1><p class="header-sub">60-minute session runner</p></div><button class="header-checklist" onclick="openChecklist()">Checklist</button></div></header><main>
 <section id="builder" class="card"><h2>Build Session</h2><div class="row"><div class="field"><label>Number attending</label><select id="attendees"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6+</option></select></div><div class="field"><label>Location</label><select id="location"><option value="outdoor" selected>Outdoor</option><option value="indoor">Indoor / Hall</option></select></div><div class="field"><label>Energy</label><select id="energy"><option value="normal" selected>Normal</option><option value="lighter">Lighter</option><option value="higher">Higher</option></select></div></div><div class="row" style="margin-top:12px"><button class="primary" onclick="buildSession()">Build 60-min Session</button><button class="secondary" onclick="showLibrary()">Activity Library</button><button class="secondary" onclick="showAdd()">Add New Activity</button></div><p class="small muted">The generator adds bonus activities at the end. Use Skip if you do not need them.</p></section>
 <section id="sessionPanel" class="hidden"><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="section-title">Session Runner</div><div id="sessionMeta" class="muted small"></div></div><button class="ghost" onclick="resetToBuilder()">Change</button></div><div class="progress"><div id="progressBar"></div></div></div><div id="activityCard" class="card"></div></section>
 <section id="libraryPanel" class="card hidden"><div class="row" style="justify-content:space-between;align-items:center"><h2>Activity Library</h2><button class="ghost" onclick="hidePanels()">Back</button></div><input id="search" placeholder="Search activities..." oninput="renderLibrary()"><div class="row" style="margin-top:8px"><button class="secondary" onclick="exportData()">Export JSON</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import JSON</button><button class="danger" onclick="resetLibrary()">Reset Library</button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)"></div><div id="libraryList"></div></section>
@@ -1278,6 +1285,7 @@ function dhgTestAlert(){
 
 
 let totalRemaining=0,roundRemaining=0,roundTotal=0,roundCount=0,currentRound=1,roundMode=false,roundLabels=[];
+let checklistReturnIndex=0,equipmentChecked={};
 
 function parseRoundInfo(a){
   if (Array.isArray(a.round_details) && a.round_details.length > 1) {
@@ -1349,15 +1357,36 @@ function buildEquipmentList(){
   });
   return Array.from(map.values()).sort((a,b)=>a.name.localeCompare(b.name));
 }
-function showEquipmentChecklist(){
+function openChecklist(){
+  if(!session || !session.length){
+    alert("Build a session first, then the checklist will appear.");
+    return;
+  }
+  showEquipmentChecklist(true);
+}
+
+function showEquipmentChecklist(fromHeader=false){
   clearInterval(timerInterval);
-  currentIndex = 0;
+
+  if(!session || !session.length){
+    alert("Build a session first.");
+    return;
+  }
+
+  checklistReturnIndex = fromHeader ? currentIndex : 0;
+  if(!fromHeader) currentIndex = 0;
+
+  document.getElementById("builder").classList.add("hidden");
+  document.getElementById("libraryPanel").classList.add("hidden");
+  document.getElementById("addPanel").classList.add("hidden");
+  document.getElementById("sessionPanel").classList.remove("hidden");
+
   const panel = document.getElementById("activityCard");
   const list = buildEquipmentList();
 
   const listHtml = list.length ? list.map((item,i)=>`
     <label class="equipment-item">
-      <input type="checkbox">
+      <input type="checkbox" ${equipmentChecked[item.name] ? "checked" : ""} onchange="equipmentChecked['${item.name.replace(/'/g,"&#39;")}']=this.checked">
       <span>
         <b>${esc(item.name)}</b>
         <small>For: ${esc(item.activities.join(", "))}</small>
@@ -1365,14 +1394,18 @@ function showEquipmentChecklist(){
     </label>
   `).join("") : `<p>No equipment needed for this generated session.</p>`;
 
+  const returnButton = fromHeader
+    ? `<button class="primary" onclick="currentIndex=checklistReturnIndex; renderCard()">Back to Current Activity</button>`
+    : `<button class="primary" onclick="renderCard()">Start Session</button>`;
+
   panel.innerHTML = `
     <div class="section-title">Before You Start</div>
     <div class="big-title">Equipment Checklist</div>
-    <p class="muted">Pack / prepare these before starting the session. Bonus activity equipment is marked in the activity name.</p>
+    <p class="muted">Pack / prepare these before starting the session. You can also return to this checklist from the header button.</p>
     <div class="equipment-list">${listHtml}</div>
     <div class="equipment-actions">
       <button class="secondary" onclick="resetToBuilder()">Change Session</button>
-      <button class="primary" onclick="renderCard()">Start Session</button>
+      ${returnButton}
     </div>
   `;
   updateProgress();
@@ -1407,16 +1440,7 @@ function renderCard(){
       </div>
     </div>
     <div id="roundNote" class="round-note">${esc(getRoundLabel())}</div>
-    <div class="round-buttons">
-      <button class="secondary" onclick="startTimer()">Start Round</button>
-      <button class="secondary" onclick="pauseTimer()">Pause</button>
-      <button class="secondary" onclick="resetRoundTimer()">Reset Round</button>
-    </div>
-    <div class="round-buttons">
-      <button class="secondary" onclick="prevRound()">Previous Round</button>
-      <button class="danger" onclick="skipRound()">Skip Round</button>
-      <button class="primary" onclick="nextRoundManual()">Next Round</button>
-    </div>
+    <div id="roundControlArea">${roundControlsHtml()}</div>
   ` : `
     <div class="timer">
       <div>
@@ -1460,6 +1484,36 @@ function getRoundLabel(){
   return `Round ${currentRound} of ${roundCount}. Press Start Round when ready.`;
 }
 
+function roundControlsHtml(){
+  if(!roundMode) return "";
+
+  if(currentRound >= roundCount && roundRemaining <= 0){
+    return `<div class="round-complete">All rounds complete. Use Next Activity when ready.</div>`;
+  }
+
+  const isLast = currentRound >= roundCount;
+  const secondRow = isLast
+    ? `<div class="round-buttons"><button class="danger" onclick="skipRound()">Skip Final Round</button></div>`
+    : `<div class="round-buttons">
+        <button class="danger" onclick="skipRound()">Skip Round</button>
+        <button class="primary" onclick="nextRoundManual()">Next Round</button>
+      </div>`;
+
+  return `
+    <div class="round-buttons">
+      <button class="secondary" onclick="startTimer()">Start Round</button>
+      <button class="secondary" onclick="pauseTimer()">Pause</button>
+      <button class="secondary" onclick="resetRoundTimer()">Reset Round</button>
+    </div>
+    ${secondRow}
+  `;
+}
+
+function updateRoundControls(){
+  const area=document.getElementById('roundControlArea');
+  if(area) area.innerHTML=roundControlsHtml();
+}
+
 function updateTimerDisplay(){
   const totalEl=document.getElementById('totalTime');
   if(totalEl) totalEl.innerText=formatTime(totalRemaining);
@@ -1469,13 +1523,14 @@ function updateTimerDisplay(){
   if(noteEl) noteEl.innerText=getRoundLabel();
   const labels=document.querySelectorAll('.timer-box .label');
   if(roundMode && labels.length>1) labels[1].innerText=`Round ${currentRound} of ${roundCount}`;
+  updateRoundControls();
 }
 
 function updateProgress(){
   document.getElementById('progressBar').style.width=(session.length?(currentIndex/session.length)*100:0)+'%';
 }
 
-function nextCard(){currentIndex++;renderCard()}
+function nextCard(){currentIndex++;showEquipmentChecklist()}
 function prevCard(){if(currentIndex>0)currentIndex--;renderCard()}
 function skipCard(){nextCard()}
 
@@ -1543,28 +1598,25 @@ function resetRoundTimer(){
 function nextRoundManual(){
   clearInterval(timerInterval);
   if(!roundMode) return;
-  if(currentRound<roundCount){
+  if(currentRound < roundCount){
     currentRound++;
-    roundRemaining=roundTotal;
-  }else{
-    roundRemaining=0;
-  }
-  updateTimerDisplay();
-}
-
-function prevRound(){
-  clearInterval(timerInterval);
-  if(!roundMode) return;
-  if(currentRound>1){
-    currentRound--;
-    roundRemaining=roundTotal;
+    roundRemaining = roundTotal;
   }
   updateTimerDisplay();
 }
 
 function skipRound(){
-  nextRoundManual();
+  clearInterval(timerInterval);
+  if(!roundMode) return;
+  if(currentRound < roundCount){
+    currentRound++;
+    roundRemaining = roundTotal;
+  }else{
+    roundRemaining = 0;
+  }
+  updateTimerDisplay();
 }
+
 
 function formatTime(s){
   s=Math.max(0,Math.round(s||0));
