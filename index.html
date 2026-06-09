@@ -1469,7 +1469,7 @@ function renderCard(){
     <p>${esc(a.how)}</p>
     ${roundPanel}
     <div class="nav-buttons">
-      <button class="secondary" onclick="prevCard()">Back</button>
+      ${currentIndex > 0 ? '<button class="secondary" onclick="prevCard()">Back</button>' : ''}
       <button class="danger" onclick="skipCard()">Skip Activity</button>
       <button class="primary" onclick="nextCard()">Next Activity</button>
     </div>
@@ -1530,7 +1530,7 @@ function updateProgress(){
   document.getElementById('progressBar').style.width=(session.length?(currentIndex/session.length)*100:0)+'%';
 }
 
-function nextCard(){currentIndex++;showEquipmentChecklist()}
+function nextCard(){currentIndex++;renderCard()}
 function prevCard(){if(currentIndex>0)currentIndex--;renderCard()}
 function skipCard(){nextCard()}
 
