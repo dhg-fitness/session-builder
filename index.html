@@ -87,13 +87,13 @@ body.timer-alert::after{
   .round-buttons{grid-template-columns:1fr;}
 }
 
-</style></head><body><header><h1>DHG Fitness Session Builder</h1><p>Version 4 — total timer + round timer, no test buttons.</p></header><main>
+</style></head><body><header><h1>DHG Fitness Session Builder</h1><p>Version 5 — full round instructions on every timed round.</p></header><main>
 <section id="builder" class="card"><h2>Build Session</h2><div class="row"><div class="field"><label>Number attending</label><select id="attendees"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6+</option></select></div><div class="field"><label>Location</label><select id="location"><option value="outdoor" selected>Outdoor</option><option value="indoor">Indoor / Hall</option></select></div><div class="field"><label>Energy</label><select id="energy"><option value="normal" selected>Normal</option><option value="lighter">Lighter</option><option value="higher">Higher</option></select></div></div><div class="row" style="margin-top:12px"><button class="primary" onclick="buildSession()">Build 60-min Session</button><button class="secondary" onclick="showLibrary()">Activity Library</button><button class="secondary" onclick="showAdd()">Add New Activity</button></div><p class="small muted">The generator adds bonus activities at the end. Use Skip if you do not need them.</p></section>
 <section id="sessionPanel" class="hidden"><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="section-title">Session Runner</div><div id="sessionMeta" class="muted small"></div></div><button class="ghost" onclick="resetToBuilder()">Change</button></div><div class="progress"><div id="progressBar"></div></div></div><div id="activityCard" class="card"></div></section>
 <section id="libraryPanel" class="card hidden"><div class="row" style="justify-content:space-between;align-items:center"><h2>Activity Library</h2><button class="ghost" onclick="hidePanels()">Back</button></div><input id="search" placeholder="Search activities..." oninput="renderLibrary()"><div class="row" style="margin-top:8px"><button class="secondary" onclick="exportData()">Export JSON</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import JSON</button><button class="danger" onclick="resetLibrary()">Reset Library</button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)"></div><div id="libraryList"></div></section>
 <section id="addPanel" class="card hidden"><div class="row" style="justify-content:space-between;align-items:center"><h2>Add New Activity</h2><button class="ghost" onclick="hidePanels()">Back</button></div><div class="row"><div class="field"><label>Title</label><input id="newTitle" placeholder="e.g. Story Ball"></div><div class="field"><label>Section</label><select id="newSection"><option>Warm-Up Game</option><option>Light Reaction</option><option>Moderate Movement</option><option>Brain & Movement</option><option>Teamwork & Laughter</option><option>Strength & Resistance</option><option>Power & Conditioning</option><option>Lower Intensity / Reset</option><option>Maintenance Minute</option><option>Team Movement</option></select></div></div><div class="row"><div class="field"><label>Duration minutes</label><input id="newDuration" type="number" value="5"></div><div class="field"><label>Minimum people</label><input id="newMin" type="number" value="3"></div><div class="field"><label>Requires even numbers?</label><select id="newEven"><option value="false">No</option><option value="true">Yes</option></select></div></div><div class="row"><div class="field"><label>Location</label><select id="newLoc"><option value="both">Both</option><option value="outdoor">Outdoor only</option><option value="indoor">Indoor only</option></select></div><div class="field"><label>Intensity</label><select id="newIntensity"><option>low</option><option>low/moderate</option><option>moderate</option><option>moderate/high</option><option>high</option></select></div><div class="field"><label>Fun score</label><select id="newFun"><option>medium</option><option>high</option><option>low</option></select></div></div><label>Equipment</label><input id="newEquipment" placeholder="Cones, ball, bands..."><label>Rounds / Timing</label><input id="newRounds" placeholder="3 rounds x 45 seconds"><label>Setup</label><textarea id="newSetup" rows="2"></textarea><label>How to run</label><textarea id="newHow" rows="3"></textarea><label>Coaching notes</label><textarea id="newNotes" rows="2"></textarea><button class="primary" style="margin-top:12px" onclick="addActivity()">Add Activity</button></section>
 </main><script>
-const DEFAULT_ACTIVITIES = [
+const DEFAULT_ACTIVITIES [
   {
     "id": "breathing-reset",
     "title": "Breathing Reset",
@@ -175,8 +175,13 @@ const DEFAULT_ACTIVITIES = [
     "setup_time": "low",
     "fun": "high",
     "setup": "Loose circle or open space. Everyone moves gently as the ball is passed.",
-    "how": "Coach starts with one word. Pass the ball while calling someone’s name. The catcher adds one word, calls another name, and passes. Keep one continuous story going.",
-    "notes": "Do not overthink it. First word that comes into your head. Drop it, laugh and continue."
+    "how": "Coach starts with one word. Pass the ball while calling someone\u2019s name. The catcher adds one word, calls another name, and passes. Keep one continuous story going.",
+    "notes": "Do not overthink it. First word that comes into your head. Drop it, laugh and continue.",
+    "round_details": [
+      "Round 1: Normal walking. Start the one-word story and pass the ball while calling a name.",
+      "Round 2: Side-stepping. Continue the same story, one word at a time.",
+      "Round 3: Three steps forwards / three steps backwards. Continue the same story."
+    ]
   },
   {
     "id": "hot-potato",
@@ -197,7 +202,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Loose circle, everyone moving gently.",
     "how": "Keep moving while passing/catching. If the ball drops, reset quickly. Add light actions such as turn, reach, clap or gentle squat if suitable.",
-    "notes": "Good warm-up or maintenance filler."
+    "notes": "Good warm-up or maintenance filler.",
+    "round_details": [
+      "Round 1: Normal hot potato. Gentle movement, call a name, pass and catch.",
+      "Round 2: Name call before every pass. Keep feet moving and the ball moving.",
+      "Round 3: Slightly quicker passing. If dropped, pick it up, laugh and continue."
+    ]
   },
   {
     "id": "grab-cone-jog",
@@ -218,7 +228,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "People stand around a cone with space to move.",
     "how": "Call shoulders, knees, toes, jump, turn, grab. They react to commands and only grab when called.",
-    "notes": "Strong early-session laughter activity."
+    "notes": "Strong early-session laughter activity.",
+    "round_details": [
+      "Round 1: Stationary around the cone. Call shoulders, knees, toes, jump, turn, grab.",
+      "Round 2: Walk or jog gently around the cone. Call body parts and direction changes before grab.",
+      "Round 3: Reaction round. Add clap, turn or hands behind back before calling grab."
+    ]
   },
   {
     "id": "grab-cone-low",
@@ -239,7 +254,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Same as cone grab, slightly lower stance.",
     "how": "Use shoulders, knees, toes, grab. Offer higher stance option for knees.",
-    "notes": "Avoid making it too low for knee-sensitive participants."
+    "notes": "Avoid making it too low for knee-sensitive participants.",
+    "round_details": [
+      "Round 1: Comfortable low stance. Call shoulders, knees, toes, then grab.",
+      "Round 2: Add jump or turn before grab, only if knees are comfortable.",
+      "Round 3: Final reaction round. Faster commands, still controlled."
+    ]
   },
   {
     "id": "cone-reaction-sprint",
@@ -260,7 +280,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Centre cone with cones left/right/front/back.",
     "how": "Call left, right, floor, sprint, backpedal. Participants react, touch cone, return to centre.",
-    "notes": "Short bursts only. Do not place after another high-energy game."
+    "notes": "Short bursts only. Do not place after another high-energy game.",
+    "round_details": [
+      "Round 1: Left / right / floor only. Touch cone and return to centre.",
+      "Round 2: Add sprint forwards and backpedal to centre.",
+      "Round 3: Mixed command round. Keep it quick but safe."
+    ]
   },
   {
     "id": "tail-tag",
@@ -281,7 +306,13 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Mark a safe playing area.",
     "how": "One player has the tail. Others try to take it. Rotate quickly so everyone gets a go.",
-    "notes": "Great fun but tiring. Keep short."
+    "notes": "Great fun but tiring. Keep short.",
+    "round_details": [
+      "Round 1: First tail holder. Others try to take the tail for 20\u201330 seconds.",
+      "Round 2: Rotate tail holder. Same rules.",
+      "Round 3: Rotate tail holder. Smaller area if it needs more energy.",
+      "Round 4: Final quick round or rotate again if needed."
+    ]
   },
   {
     "id": "box-cone-running",
@@ -302,7 +333,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Set cones in a box or zig-zag route.",
     "how": "Run to first cone, side skip, run forward, side skip, then walk/backpedal to start.",
-    "notes": "Moderate movement without too much chaos."
+    "notes": "Moderate movement without too much chaos.",
+    "round_details": [
+      "Round 1: Run forward and side-step around the box route.",
+      "Round 2: Repeat the route, smoother and slightly quicker.",
+      "Round 3: Optional final round: add backwards walk back to start."
+    ]
   },
   {
     "id": "cone-circles",
@@ -323,7 +359,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Place cones in a straight or curved line.",
     "how": "Run to cone, circle around backwards, move to next cone. Walk back to start.",
-    "notes": "Keep space clear and safe."
+    "notes": "Keep space clear and safe.",
+    "round_details": [
+      "Round 1: Move to each cone and circle backwards around it.",
+      "Round 2: Repeat with smoother turns and better control.",
+      "Round 3: Optional final round: slightly quicker, still safe."
+    ]
   },
   {
     "id": "in-out-running",
@@ -344,7 +385,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Participants line up with space between them.",
     "how": "Person at back weaves in and out to the front; new back person continues.",
-    "notes": "Indoors only if space is enough."
+    "notes": "Indoors only if space is enough.",
+    "round_details": [
+      "Round 1: Back person weaves to the front at steady pace.",
+      "Round 2: Repeat with a little more rhythm.",
+      "Round 3: Optional final round, short and sharp."
+    ]
   },
   {
     "id": "shuttle-memory",
@@ -365,7 +411,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Place cones/markers in a line or small grid.",
     "how": "Call short colour/number sequences. Participants remember and touch in order before returning to start.",
-    "notes": "Movement plus brain without exhausting everyone."
+    "notes": "Movement plus brain without exhausting everyone.",
+    "round_details": [
+      "Round 1: Simple sequence of 3 cones/markers.",
+      "Round 2: Slightly longer sequence or different movement style.",
+      "Round 3: Final memory challenge. Keep it fun, not stressful."
+    ]
   },
   {
     "id": "silent-line-up",
@@ -386,7 +437,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Open space.",
     "how": "Group lines up by birthday month, height, shoe size etc without talking.",
-    "notes": "Best for larger groups, not 3-4 people."
+    "notes": "Best for larger groups, not 3-4 people.",
+    "round_details": [
+      "Round 1: Line up silently by birthday month.",
+      "Round 2: Line up silently by height.",
+      "Round 3: Line up silently by shoe size or another easy prompt."
+    ]
   },
   {
     "id": "marker-flip",
@@ -407,7 +463,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Scatter markers, half up and half down, inside a marked area.",
     "how": "One team turns markers one way; the other team turns them the other way. Count at the end of each round.",
-    "notes": "Simple, competitive and fun."
+    "notes": "Simple, competitive and fun.",
+    "round_details": [
+      "Round 1: Normal marker flip. Team A turns up, Team B turns down.",
+      "Round 2: Side-step only while flipping markers.",
+      "Round 3: One-hand-only or final chaos round."
+    ]
   },
   {
     "id": "build-shape",
@@ -428,7 +489,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Build zone 5-8m from equipment pile.",
     "how": "One piece at a time, participants build shapes such as arrow, house, boat, flower, clock or smiley face. Add movement variation by round.",
-    "notes": "Excellent DHG activity: teamwork, creativity and movement."
+    "notes": "Excellent DHG activity: teamwork, creativity and movement.",
+    "round_details": [
+      "Round 1: Build an arrow or simple shape. Normal movement.",
+      "Round 2: Build a house. Side-step to collect, jog/walk back.",
+      "Round 3: Build a boat or funny shape. Three steps backwards / forwards or normal if space is tight."
+    ]
   },
   {
     "id": "steal",
@@ -449,7 +515,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Central treasure pile and team bases.",
     "how": "Teams collect from centre one at a time. Once a team has 3 treasures, they may steal from other teams. Last 30 seconds: everyone can steal.",
-    "notes": "Great finisher or mid-session game. Best with 4+."
+    "notes": "Great finisher or mid-session game. Best with 4+.",
+    "round_details": [
+      "Round 1: Collect from the central pile only. One person at a time.",
+      "Round 2: Stealing begins once a team has 3 treasures.",
+      "Round 3: Final 30\u201360 seconds: everyone can steal. Count the score."
+    ]
   },
   {
     "id": "partner-cone-transport",
@@ -470,7 +541,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Start zone with discs, empty zone 4-5m away.",
     "how": "Pairs transport cones without hands. R1 forearms, R2 shoulders, R3 back-to-back. If dropped, return to start.",
-    "notes": "Only use with even numbers, or if coach joins in."
+    "notes": "Only use with even numbers, or if coach joins in.",
+    "round_details": [
+      "Round 1: Transport discs using forearms only.",
+      "Round 2: Transport discs shoulder-to-shoulder.",
+      "Round 3: Transport discs back-to-back."
+    ]
   },
   {
     "id": "band-tug-base",
@@ -491,7 +567,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Players start middle with cones at each base.",
     "how": "Using band resistance, each player moves cones one by one to their base. First to place all cones wins.",
-    "notes": "Good competitive resistance game. Needs safe band control."
+    "notes": "Good competitive resistance game. Needs safe band control.",
+    "round_details": [
+      "Round 1: Move cones one by one to your base under band resistance.",
+      "Round 2: Swap sides/roles and repeat.",
+      "Round 3: Final round. Smooth movement, no jerking."
+    ]
   },
   {
     "id": "royal-relay",
@@ -512,7 +593,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Cone weave route.",
     "how": "Carry wall ball like a crown while navigating cones. R1 straight route, R2 royal wave, R3 pause and salute/bow/pose at each cone.",
-    "notes": "Better as cooperative procession if only one ball."
+    "notes": "Better as cooperative procession if only one ball.",
+    "round_details": [
+      "Round 1: Royal walk. Ball balanced as a crown through the cones.",
+      "Round 2: Royal wave. One hand steadies the ball, the other waves.",
+      "Round 3: Royal pose. Pause at each cone for a salute, bow, wave or pose."
+    ]
   },
   {
     "id": "partner-pole-push",
@@ -533,7 +619,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Pairs face each other holding pole horizontally.",
     "how": "One pushes while the other resists with small controlled steps. Swap roles. Move A to B or around cones.",
-    "notes": "Controlled resistance, not a battle."
+    "notes": "Controlled resistance, not a battle.",
+    "round_details": [
+      "Round 1: Partner A pushes while Partner B resists. Move slowly from A to B.",
+      "Round 2: Swap roles.",
+      "Round 3: Slalom/control round around cones, still using gentle resistance."
+    ]
   },
   {
     "id": "partner-pole-pull",
@@ -554,7 +645,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Pairs face each other holding pole.",
     "how": "One pulls while the other resists and walks backward/forward under control. Swap roles.",
-    "notes": "Keep shoulders relaxed and smooth."
+    "notes": "Keep shoulders relaxed and smooth.",
+    "round_details": [
+      "Round 1: Partner A pulls while Partner B resists and walks under control.",
+      "Round 2: Swap roles.",
+      "Round 3: Smooth final round, keeping tension without jerking."
+    ]
   },
   {
     "id": "partner-band-rows",
@@ -575,7 +671,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Pairs with band resistance set safely.",
     "how": "Partners create resistance for rowing pulls and standing chest presses. Swap roles or alternate.",
-    "notes": "Good controlled strength section."
+    "notes": "Good controlled strength section.",
+    "round_details": [
+      "Round 1: Partner rows. One works, one provides resistance.",
+      "Round 2: Standing chest presses. Swap/resist safely.",
+      "Round 3: Mix rows and presses or swap partners if suitable."
+    ]
   },
   {
     "id": "partner-band-rotations",
@@ -596,7 +697,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "One partner anchors band, other rotates upper body away and back.",
     "how": "Rotate controlled, roughly from 10-to to 10-past position. Swap roles.",
-    "notes": "Cue posture and smooth movement."
+    "notes": "Cue posture and smooth movement.",
+    "round_details": [
+      "Round 1: Partner A rotates left/right under band resistance.",
+      "Round 2: Partner B rotates left/right under band resistance.",
+      "Round 3: Optional repeat or swap sides."
+    ]
   },
   {
     "id": "tug-band-walk",
@@ -617,7 +723,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Band around waists or held safely. Mark opposing directions.",
     "how": "Partners walk in opposing directions while maintaining safe resistance.",
-    "notes": "Use carefully and avoid jerking."
+    "notes": "Use carefully and avoid jerking.",
+    "round_details": [
+      "Round 1: Walk apart under control, then return.",
+      "Round 2: Swap direction/side.",
+      "Round 3: Final controlled tug walk. No jerking."
+    ]
   },
   {
     "id": "partner-bungee",
@@ -637,7 +748,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "One wears belt, partner holds handle; set a route.",
     "how": "Pair moves around route while keeping tension. Swap roles.",
-    "notes": "Outdoor preferred. Needs space."
+    "notes": "Outdoor preferred. Needs space.",
+    "round_details": [
+      "Round 1: Partner A wears the belt and moves around the route.",
+      "Round 2: Partner B wears the belt and moves around the route.",
+      "Round 3: Final route or side-step variation if safe."
+    ]
   },
   {
     "id": "bungee-runs",
@@ -657,7 +773,13 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Line out and back; partner or coach anchors.",
     "how": "Person runs to a line and back under resistance. Walking, sprinting or side-skip variations.",
-    "notes": "High energy. Use once and keep short."
+    "notes": "High energy. Use once and keep short.",
+    "round_details": [
+      "Round 1: Walk or steady run to line and back under resistance.",
+      "Round 2: Slightly quicker run to line and back.",
+      "Round 3: Side-step or controlled sprint variation.",
+      "Round 4: Optional final short effort."
+    ]
   },
   {
     "id": "bungee-grabs",
@@ -677,7 +799,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Line of cones away from start.",
     "how": "Runner collects cones one by one under resistance: first and back, second and back, etc.",
-    "notes": "Outdoor only or large hall. Use cautiously."
+    "notes": "Outdoor only or large hall. Use cautiously.",
+    "round_details": [
+      "Round 1: Collect first cone and return.",
+      "Round 2: Collect second/third cones one at a time.",
+      "Round 3: Final cone collection challenge."
+    ]
   },
   {
     "id": "slam-overheads",
@@ -697,7 +824,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Open outdoor space.",
     "how": "Squat down, pick up ball and throw backwards overhead. Run to it and repeat.",
-    "notes": "Use outdoors with clear space."
+    "notes": "Use outdoors with clear space.",
+    "round_details": [
+      "Round 1: Overhead throw, jog to ball, repeat back.",
+      "Round 2: Repeat with smooth pick-up and safe spacing.",
+      "Round 3: Final short round, stop before form drops."
+    ]
   },
   {
     "id": "slam-slams",
@@ -718,7 +850,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Safe surface/space.",
     "how": "Raise ball overhead and slam down. Repeat for time.",
-    "notes": "Can be loud indoors. Short burst only."
+    "notes": "Can be loud indoors. Short burst only.",
+    "round_details": [
+      "Round 1: Slam ball slams at steady pace.",
+      "Round 2: Repeat, focus on safe pick-up and strong finish.",
+      "Round 3: Final short round, quality over speed."
+    ]
   },
   {
     "id": "weighted-ball-walks",
@@ -739,7 +876,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Mark short carry route.",
     "how": "Squat down, pick up ball, carry in front or on one shoulder around route.",
-    "notes": "Strength-conditioning without complex rules."
+    "notes": "Strength-conditioning without complex rules.",
+    "round_details": [
+      "Round 1: Carry ball in front around route.",
+      "Round 2: Carry ball on shoulder if comfortable, then swap side.",
+      "Round 3: Final carry round, steady pace."
+    ]
   },
   {
     "id": "suitcase-carries",
@@ -760,7 +902,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Short carry lane.",
     "how": "Carry load one side like a suitcase; swap sides. Walk controlled route.",
-    "notes": "Useful practical strength."
+    "notes": "Useful practical strength.",
+    "round_details": [
+      "Round 1: Suitcase carry on one side.",
+      "Round 2: Suitcase carry on the other side.",
+      "Round 3: Final carry round, choose side or swap halfway."
+    ]
   },
   {
     "id": "weight-sledge",
@@ -780,7 +927,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Attach plate safely and mark distance.",
     "how": "Walk to complete distance pulling the weight and return within time.",
-    "notes": "Outdoor preferred. Setup heavy."
+    "notes": "Outdoor preferred. Setup heavy.",
+    "round_details": [
+      "Round 1: Pull the weight over the set distance and back.",
+      "Round 2: Repeat, steady controlled pace.",
+      "Round 3: Final pull, stop before form drops."
+    ]
   },
   {
     "id": "wall-ball-hand-roll",
@@ -801,7 +953,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Cone route out and back.",
     "how": "Push ball forwards around cone route using hands, then return.",
-    "notes": "Good reset between harder games."
+    "notes": "Good reset between harder games.",
+    "round_details": [
+      "Round 1: Push ball around the cone route using hands.",
+      "Round 2: Repeat route, smoother turns.",
+      "Round 3: Optional final round, slightly quicker but controlled."
+    ]
   },
   {
     "id": "slam-foot-roll",
@@ -822,7 +979,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Cone route out and back.",
     "how": "Push ball forwards around cone route using feet.",
-    "notes": "Coordination reset. Keep slow and controlled."
+    "notes": "Coordination reset. Keep slow and controlled.",
+    "round_details": [
+      "Round 1: Push ball around route using feet.",
+      "Round 2: Repeat with more control.",
+      "Round 3: Optional final round or swap direction."
+    ]
   },
   {
     "id": "balance-coordination",
@@ -843,7 +1005,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "low",
     "setup": "3-4 markers per person or group.",
     "how": "One-leg cone touch, reach and recover, clock reaches. Use as reset, not main event.",
-    "notes": "Use rarely and only as a short recovery/control block."
+    "notes": "Use rarely and only as a short recovery/control block.",
+    "round_details": [
+      "Round 1: One-leg cone touch: left, middle, right.",
+      "Round 2: Reach and recover with hand reach to markers.",
+      "Round 3: Clock reaches: tap called numbers and recover."
+    ]
   },
   {
     "id": "ball-over-under",
@@ -864,7 +1031,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Group line facing same direction.",
     "how": "Front person passes ball overhead, next under, alternating. Last person runs to front. Continue to finish line.",
-    "notes": "Works best 4+ but possible with 3."
+    "notes": "Works best 4+ but possible with 3.",
+    "round_details": [
+      "Round 1: Over-under pass down the line, last person moves to front.",
+      "Round 2: Repeat, smoother and slightly quicker.",
+      "Round 3: Optional final race to the finish line."
+    ]
   },
   {
     "id": "ball-side-side",
@@ -885,7 +1057,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Group line facing same direction.",
     "how": "Pass ball sideways alternating left/right. Last person runs to front. Continue to finish line.",
-    "notes": "Good team coordination."
+    "notes": "Good team coordination.",
+    "round_details": [
+      "Round 1: Side-to-side pass down the line, last person moves to front.",
+      "Round 2: Repeat in opposite direction or smoother rhythm.",
+      "Round 3: Optional final race to the finish line."
+    ]
   },
   {
     "id": "group-slam-carry",
@@ -906,7 +1083,12 @@ const DEFAULT_ACTIVITIES = [
     "fun": "medium",
     "setup": "Two zones or one back-and-forth line.",
     "how": "Front person picks up ball, carries to other zone, drops, returns. Next continues.",
-    "notes": "Adapt depending on numbers."
+    "notes": "Adapt depending on numbers.",
+    "round_details": [
+      "Round 1: Carry ball to other zone/team and return.",
+      "Round 2: Repeat, swap shoulder/side if suitable.",
+      "Round 3: Final carry round, steady but strong."
+    ]
   },
   {
     "id": "cool-down",
@@ -1013,6 +1195,7 @@ const DEFAULT_ACTIVITIES = [
     "how": "Before passing, receiver does two shoulder rolls or arm swings, then calls a name and passes.",
     "notes": "Keeps them warm but calm."
   }
+]
 ];
 let activities=loadActivities(),session=[],currentIndex=0,timerInterval=null,remaining=0;let audioCtx=null,audioUnlocked=false;function unlockAudio(){try{if(audioUnlocked)return;const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;audioCtx=new Ctx();if(audioCtx.state==="suspended")audioCtx.resume();audioUnlocked=true}catch(e){}}function playTone(freq,duration,start){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime+start;o.type="square";o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.18,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+duration);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+duration+0.03)}function playEndBuzzer(){try{if(!audioCtx)unlockAudio();if(!audioCtx)return;if(audioCtx.state==="suspended")audioCtx.resume();playTone(440,.18,0);playTone(330,.18,.22);playTone(440,.35,.44)}catch(e){}}function flashTimerDone(){document.body.classList.add("timer-alert");setTimeout(()=>document.body.classList.remove("timer-alert"),3000)}function timerDoneAlert(){playEndBuzzer();flashTimerDone();if(navigator.vibrate)navigator.vibrate([220,90,220,90,350])}
 function loadActivities(){try{const s=localStorage.getItem('dhgActivities');return s?JSON.parse(s):DEFAULT_ACTIVITIES}catch(e){return DEFAULT_ACTIVITIES}}function saveActivities(){localStorage.setItem('dhgActivities',JSON.stringify(activities))}
@@ -1077,23 +1260,34 @@ function dhgTestAlert(){
 let totalRemaining=0,roundRemaining=0,roundTotal=0,roundCount=0,currentRound=1,roundMode=false,roundLabels=[];
 
 function parseRoundInfo(a){
+  if(Array.isArray(a.round_details) && a.round_details.length > 1){
+    return {
+      count: a.round_details.length,
+      seconds: Math.max(20, Math.round(((a.duration || 1) * 60) / a.round_details.length)),
+      labels: a.round_details
+    };
+  }
+
   const text=(a.rounds||"").replace(/–/g,"-");
   let info={count:0,seconds:0,labels:[]};
 
-  let m=text.match(/(\d+)(?:\s*-\s*(\d+))?\s*rounds?.*?(\d+)(?:\s*-\s*(\d+))?\s*seconds?/i);
+  let m=text.match(/(\d+)(?:\s*-\s*(\d+))?\s*rounds?.*?(\d+)(?:\s*-\s*(\d+))?\s*(?:sec|seconds?)/i);
   if(m){
     info.count=parseInt(m[1],10);
     info.seconds=parseInt(m[3],10);
   }
 
-  const rMatches=[...text.matchAll(/R(\d+)\s*:?\s*([^R]+)/gi)];
+  const rMatches=[...text.matchAll(/R(\d+)\s*:?\s*([\s\S]*?)(?=\s*R\d+\s*:|$)/gi)];
   if(rMatches.length>=2){
     info.count=rMatches.length;
-    info.labels=rMatches.map(x=>("R"+x[1]+": "+x[2]).trim().replace(/\s+/g," "));
+    info.labels=rMatches.map(x=>("Round "+x[1]+": "+x[2]).trim().replace(/\s+/g," "));
     info.seconds=Math.max(30,Math.round(((a.duration||1)*60)/info.count));
   }
 
   if(!info.seconds || info.count<2) return {count:0,seconds:0,labels:[]};
+  if(!info.labels.length){
+    info.labels = Array.from({length:info.count}, (_,i)=>`Round ${i+1} of ${info.count}: Follow the activity instructions for this round.`);
+  }
   return info;
 }
 
