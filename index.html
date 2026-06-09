@@ -87,7 +87,7 @@ body.timer-alert::after{
   .round-buttons{grid-template-columns:1fr;}
 }
 
-</style></head><body><header><h1>DHG Fitness Session Builder</h1><p>Version 5 — full round instructions on every timed round.</p></header><main>
+</style></head><body><header><h1>DHG Fitness Session Builder</h1><p>Version 6 — round text bug fixed and saved activities updated.</p></header><main>
 <section id="builder" class="card"><h2>Build Session</h2><div class="row"><div class="field"><label>Number attending</label><select id="attendees"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6+</option></select></div><div class="field"><label>Location</label><select id="location"><option value="outdoor" selected>Outdoor</option><option value="indoor">Indoor / Hall</option></select></div><div class="field"><label>Energy</label><select id="energy"><option value="normal" selected>Normal</option><option value="lighter">Lighter</option><option value="higher">Higher</option></select></div></div><div class="row" style="margin-top:12px"><button class="primary" onclick="buildSession()">Build 60-min Session</button><button class="secondary" onclick="showLibrary()">Activity Library</button><button class="secondary" onclick="showAdd()">Add New Activity</button></div><p class="small muted">The generator adds bonus activities at the end. Use Skip if you do not need them.</p></section>
 <section id="sessionPanel" class="hidden"><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="section-title">Session Runner</div><div id="sessionMeta" class="muted small"></div></div><button class="ghost" onclick="resetToBuilder()">Change</button></div><div class="progress"><div id="progressBar"></div></div></div><div id="activityCard" class="card"></div></section>
 <section id="libraryPanel" class="card hidden"><div class="row" style="justify-content:space-between;align-items:center"><h2>Activity Library</h2><button class="ghost" onclick="hidePanels()">Back</button></div><input id="search" placeholder="Search activities..." oninput="renderLibrary()"><div class="row" style="margin-top:8px"><button class="secondary" onclick="exportData()">Export JSON</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import JSON</button><button class="danger" onclick="resetLibrary()">Reset Library</button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)"></div><div id="libraryList"></div></section>
@@ -1199,6 +1199,24 @@ const DEFAULT_ACTIVITIES [
 ];
 let activities=loadActivities(),session=[],currentIndex=0,timerInterval=null,remaining=0;let audioCtx=null,audioUnlocked=false;function unlockAudio(){try{if(audioUnlocked)return;const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;audioCtx=new Ctx();if(audioCtx.state==="suspended")audioCtx.resume();audioUnlocked=true}catch(e){}}function playTone(freq,duration,start){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime+start;o.type="square";o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.18,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+duration);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+duration+0.03)}function playEndBuzzer(){try{if(!audioCtx)unlockAudio();if(!audioCtx)return;if(audioCtx.state==="suspended")audioCtx.resume();playTone(440,.18,0);playTone(330,.18,.22);playTone(440,.35,.44)}catch(e){}}function flashTimerDone(){document.body.classList.add("timer-alert");setTimeout(()=>document.body.classList.remove("timer-alert"),3000)}function timerDoneAlert(){playEndBuzzer();flashTimerDone();if(navigator.vibrate)navigator.vibrate([220,90,220,90,350])}
 function loadActivities(){try{const s=localStorage.getItem('dhgActivities');return s?JSON.parse(s):DEFAULT_ACTIVITIES}catch(e){return DEFAULT_ACTIVITIES}}function saveActivities(){localStorage.setItem('dhgActivities',JSON.stringify(activities))}
+
+function migrateSavedActivities(){
+  try{
+    const defaultMap = new Map(DEFAULT_ACTIVITIES.map(a => [a.id, a]));
+    let changed = false;
+    activities = activities.map(a => {
+      const d = defaultMap.get(a.id);
+      if(d && Array.isArray(d.round_details) && d.round_details.length && (!Array.isArray(a.round_details) || !a.round_details.length)){
+        changed = true;
+        return {...a, round_details: d.round_details};
+      }
+      return a;
+    });
+    if(changed) saveActivities();
+  }catch(e){}
+}
+migrateSavedActivities();
+
 function normaliseLocation(loc){return loc==='both'?['indoor','outdoor']:[loc]}function fits(a,n,loc){return a.locations.includes(loc)&&n>=a.min&&n<=a.max&&!(a.requires_even&&n%2!==0)}function isHigh(a){return (a.intensity||'').includes('high')}
 function scoreActivity(a,loc,energy){let s=0;if(a.fun==='high')s+=4;if(a.setup_time==='low')s+=2;if(a.setup_time==='high')s-=2;if(a.locations.length===2)s+=1;if(energy==='lighter'&&isHigh(a))s-=6;if(energy==='higher'&&isHigh(a))s+=2;if(loc==='indoor'&&['marker-flip','build-shape','story-ball'].includes(a.id))s+=2;if(loc==='outdoor'&&['tail-tag','steal','bungee-runs'].includes(a.id))s+=2;return s}
 function choose(section,n,loc,used,energy,fallback=[]){let sections=[section,...fallback];let pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(energy==='lighter')pool=pool.filter(a=>!isHigh(a));if(!pool.length)pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(!pool.length)return null;pool.sort((a,b)=>scoreActivity(b,loc,energy)-scoreActivity(a,loc,energy));let max=Math.min(pool.length,4);let pick=pool[Math.floor(Math.random()*max)];used.add(pick.id);return pick}
@@ -1260,7 +1278,8 @@ function dhgTestAlert(){
 let totalRemaining=0,roundRemaining=0,roundTotal=0,roundCount=0,currentRound=1,roundMode=false,roundLabels=[];
 
 function parseRoundInfo(a){
-  if(Array.isArray(a.round_details) && a.round_details.length > 1){
+  // Prefer clear, manually-written round details when available.
+  if (Array.isArray(a.round_details) && a.round_details.length > 1) {
     return {
       count: a.round_details.length,
       seconds: Math.max(20, Math.round(((a.duration || 1) * 60) / a.round_details.length)),
@@ -1268,29 +1287,40 @@ function parseRoundInfo(a){
     };
   }
 
-  const text=(a.rounds||"").replace(/–/g,"-");
-  let info={count:0,seconds:0,labels:[]};
+  const text = (a.rounds || "").replace(/–/g, "-").trim();
+  let info = {count:0, seconds:0, labels:[]};
 
-  let m=text.match(/(\d+)(?:\s*-\s*(\d+))?\s*rounds?.*?(\d+)(?:\s*-\s*(\d+))?\s*(?:sec|seconds?)/i);
-  if(m){
-    info.count=parseInt(m[1],10);
-    info.seconds=parseInt(m[3],10);
+  // Examples: "3 rounds x 45 seconds", "3 rounds x 45–60 seconds", "2-3 rounds, 60 seconds each"
+  let m = text.match(/(\d+)(?:\s*-\s*(\d+))?\s*rounds?.*?(\d+)(?:\s*-\s*(\d+))?\s*(?:sec|seconds?)/i);
+  if (m) {
+    info.count = parseInt(m[1], 10);
+    info.seconds = parseInt(m[3], 10);
   }
 
-  const rMatches=[...text.matchAll(/R(\d+)\s*:?\s*([\s\S]*?)(?=\s*R\d+\s*:|$)/gi)];
-  if(rMatches.length>=2){
-    info.count=rMatches.length;
-    info.labels=rMatches.map(x=>("Round "+x[1]+": "+x[2]).trim().replace(/\s+/g," "));
-    info.seconds=Math.max(30,Math.round(((a.duration||1)*60)/info.count));
+  // Robust R1 / R2 / R3 parser.
+  // It stops only at the next R followed by a number, not at ordinary letters inside words like "normal".
+  const rMatches = [...text.matchAll(/R(\d+)\s*:?\s*([\s\S]*?)(?=\s*R\d+\s*:|$)/gi)];
+  if (rMatches.length >= 2) {
+    info.count = rMatches.length;
+    info.labels = rMatches.map(x =>
+      ("Round " + x[1] + ": " + x[2]).trim().replace(/\s+/g, " ")
+    );
+    info.seconds = Math.max(30, Math.round(((a.duration || 1) * 60) / info.count));
   }
 
-  if(!info.seconds || info.count<2) return {count:0,seconds:0,labels:[]};
-  if(!info.labels.length){
-    info.labels = Array.from({length:info.count}, (_,i)=>`Round ${i+1} of ${info.count}: Follow the activity instructions for this round.`);
+  if (!info.seconds || info.count < 2) {
+    return {count:0, seconds:0, labels:[]};
   }
+
+  if (!info.labels.length) {
+    info.labels = Array.from(
+      {length: info.count},
+      (_, i) => `Round ${i + 1} of ${info.count}: Follow the activity instructions for this round.`
+    );
+  }
+
   return info;
 }
-
 function initTimers(a){
   clearInterval(timerInterval);
   totalRemaining=(a.duration||1)*60;
