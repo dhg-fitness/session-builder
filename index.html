@@ -1141,7 +1141,8 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Loose circle while coach sets up next activity.",
     "how": "Keep the one-word story going while gently walking. No pressure; first word that comes to mind.",
-    "notes": "Great when you need 1-2 minutes."
+    "notes": "Great when you need 1-2 minutes.",
+    "related_to": "story-ball"
   },
   {
     "id": "mm-name-pass",
@@ -1205,6 +1206,27 @@ const DEFAULT_ACTIVITIES = [
     "setup": "Loose circle.",
     "how": "Before passing, receiver does two shoulder rolls or arm swings, then calls a name and passes.",
     "notes": "Keeps them warm but calm."
+  },
+  {
+    "id": "mm-general-reset",
+    "title": "Maintenance Minute: Easy Name Pass / Reset",
+    "section": "Maintenance Minute",
+    "duration": 1,
+    "rounds": "60 seconds",
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Small ball optional",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Loose circle or gentle walking area.",
+    "how": "Keep people gently moving while you set up. Use easy name passing, walk-and-talk, shoulder rolls or light marching.",
+    "notes": "Use only as a short filler so nobody stands still while the next activity is prepared."
   }
 ];
 let activities=loadActivities(),session=[],currentIndex=0,timerInterval=null,remaining=0;let audioCtx=null,audioUnlocked=false;function unlockAudio(){try{if(audioUnlocked)return;const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;audioCtx=new Ctx();if(audioCtx.state==="suspended")audioCtx.resume();audioUnlocked=true}catch(e){}}function playTone(freq,duration,start){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime+start;o.type="square";o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.18,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+duration);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+duration+0.03)}function playEndBuzzer(){try{if(!audioCtx)unlockAudio();if(!audioCtx)return;if(audioCtx.state==="suspended")audioCtx.resume();playTone(440,.18,0);playTone(330,.18,.22);playTone(440,.35,.44)}catch(e){}}function flashTimerDone(){document.body.classList.add("timer-alert");setTimeout(()=>document.body.classList.remove("timer-alert"),3000)}function timerDoneAlert(){playEndBuzzer();flashTimerDone();if(navigator.vibrate)navigator.vibrate([220,90,220,90,350])}
@@ -1228,9 +1250,191 @@ migrateSavedActivities();
 
 function normaliseLocation(loc){return loc==='both'?['indoor','outdoor']:[loc]}function fits(a,n,loc){return a.locations.includes(loc)&&n>=a.min&&n<=a.max&&!(a.requires_even&&n%2!==0)}function isHigh(a){return (a.intensity||'').includes('high')}
 function scoreActivity(a,loc,energy){let s=0;if(a.fun==='high')s+=4;if(a.setup_time==='low')s+=2;if(a.setup_time==='high')s-=2;if(a.locations.length===2)s+=1;if(energy==='lighter'&&isHigh(a))s-=6;if(energy==='higher'&&isHigh(a))s+=2;if(loc==='indoor'&&['marker-flip','build-shape','story-ball'].includes(a.id))s+=2;if(loc==='outdoor'&&['tail-tag','steal','bungee-runs'].includes(a.id))s+=2;return s}
+
+function plannedSeconds(a){
+  return Math.round((Number(a.duration) || 1) * 60);
+}
+function mainSessionSeconds(cards){
+  return cards.filter(a => !a.bonus).reduce((sum,a)=>sum + plannedSeconds(a),0);
+}
+function timeLabelFromSeconds(s){
+  s = Math.max(0, Math.round(s || 0));
+  const m = Math.floor(s/60), sec = s % 60;
+  if(sec === 0) return `${m} mins`;
+  return `${m}m ${String(sec).padStart(2,'0')}s`;
+}
+function timingText(a){
+  const r = parseRoundInfo(a);
+  if(r.count > 1){
+    const block = timeLabelFromSeconds(plannedSeconds(a));
+    const active = timeLabelFromSeconds(r.count * r.seconds);
+    const round = formatTime(r.seconds);
+    if(plannedSeconds(a) > r.count * r.seconds){
+      return `${r.count} rounds x ${round} each (${active} active) within a ${block} activity block`;
+    }
+    return `${r.count} rounds x ${round} each (${active} total)`;
+  }
+  return `${timeLabelFromSeconds(plannedSeconds(a))} continuous`;
+}
+function addSessionBuffer(seconds){
+  return {
+    id: "session-buffer-" + Date.now() + "-" + Math.random().toString(16).slice(2),
+    title: "Flexible Setup / Reset Buffer",
+    section: "Maintenance Minute",
+    duration: Math.max(1, Math.round(seconds/60)),
+    rounds: `${Math.max(1, Math.round(seconds/60))} minute reset`,
+    intensity: "low",
+    locations: ["indoor","outdoor"],
+    min: 1,
+    max: 99,
+    requires_even: false,
+    equipment: "Small ball optional",
+    setup_time: "low",
+    fun: "medium",
+    setup: "Use this as a gentle reset while preparing the next activity.",
+    how: "Easy name pass, walk-and-talk, shoulder rolls, or light marching. Keep everyone warm but not tired.",
+    notes: "This card is included to keep the total planned session time at exactly 60 minutes."
+  };
+}
+
 function choose(section,n,loc,used,energy,fallback=[]){let sections=[section,...fallback];let pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(energy==='lighter')pool=pool.filter(a=>!isHigh(a));if(!pool.length)pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(!pool.length)return null;pool.sort((a,b)=>scoreActivity(b,loc,energy)-scoreActivity(a,loc,energy));let max=Math.min(pool.length,4);let pick=pool[Math.floor(Math.random()*max)];used.add(pick.id);return pick}
-function maintenanceCard(n,loc){let pool=activities.filter(a=>a.section==='Maintenance Minute'&&fits(a,n,loc));return pool[Math.floor(Math.random()*pool.length)]||null}
-function buildSession(){const n=parseInt(document.getElementById('attendees').value,10),loc=document.getElementById('location').value,energy=document.getElementById('energy').value,used=new Set();let must=['breathing-reset','mobility-flow','light-bounce-footwork','story-ball'];let cards=must.map(id=>activities.find(a=>a.id===id)).filter(Boolean);must.forEach(id=>used.add(id));let plan=[['Light Reaction',[]],['Moderate Movement',['Brain & Movement']],['Teamwork & Laughter',['Brain & Movement']],['Lower Intensity / Reset',['Brain & Movement']],['Strength & Resistance',['Team Movement','Teamwork & Laughter']],['Teamwork & Laughter',['Brain & Movement']],['Power & Conditioning',['Moderate Movement','Team Movement']],['Cool Down',[]]];plan.forEach((p,i)=>{let pick=choose(p[0],n,loc,used,energy,p[1]);if(pick)cards.push(pick);if(i>0&&i<plan.length-1&&pick&&pick.setup_time!=='low'){let mm=maintenanceCard(n,loc);if(mm)cards.push({...mm,id:mm.id+'-'+i})}});let b1=choose('Teamwork & Laughter',n,loc,used,energy,['Light Reaction','Brain & Movement']);let b2=choose('Light Reaction',n,loc,used,energy,['Moderate Movement','Lower Intensity / Reset']);if(b1)cards.push({...b1,bonus:true});if(b2)cards.push({...b2,bonus:true});session=cards;currentIndex=0;document.getElementById('builder').classList.add('hidden');document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('sessionPanel').classList.remove('hidden');document.getElementById('sessionMeta').innerText=`${n} attending • ${loc} • 60 minutes • ${energy}`;showEquipmentChecklist()}
+function maintenanceCard(n,loc,used=new Set()){
+  const hasStoryBall = used.has("story-ball");
+  let pool = activities.filter(a =>
+    a.section === "Maintenance Minute" &&
+    fits(a,n,loc) &&
+    !used.has(a.id) &&
+    !(hasStoryBall && (a.related_to === "story-ball" || (a.title || "").toLowerCase().includes("story ball")))
+  );
+  if(!pool.length){
+    pool = activities.filter(a =>
+      a.section === "Maintenance Minute" &&
+      fits(a,n,loc) &&
+      !(hasStoryBall && (a.related_to === "story-ball" || (a.title || "").toLowerCase().includes("story ball")))
+    );
+  }
+  return pool[Math.floor(Math.random()*pool.length)] || null;
+}
+
+function fitSessionTo60(cards,n,loc,used,energy){
+  const TARGET = 60 * 60;
+  let cool = cards.find(a => a.id === "cool-down");
+  let main = cards.filter(a => a.id !== "cool-down" && !a.bonus);
+
+  const fillSections = [
+    ["Brain & Movement", ["Light Reaction"]],
+    ["Teamwork & Laughter", ["Brain & Movement"]],
+    ["Moderate Movement", ["Light Reaction"]],
+    ["Strength & Resistance", ["Teamwork & Laughter"]],
+    ["Lower Intensity / Reset", ["Brain & Movement"]]
+  ];
+
+  let safety = 0;
+  while(mainSessionSeconds([...main, cool].filter(Boolean)) < TARGET - 60 && safety < 20){
+    const remaining = TARGET - mainSessionSeconds([...main, cool].filter(Boolean));
+    let pick = null;
+
+    for(const pair of fillSections){
+      const candidate = choose(pair[0], n, loc, used, energy, pair[1]);
+      if(candidate && plannedSeconds(candidate) <= remaining){
+        pick = candidate;
+        break;
+      }
+      if(candidate) used.delete(candidate.id);
+    }
+
+    if(pick){
+      main.push(pick);
+      if(pick.setup_time !== "low"){
+        const mm = maintenanceCard(n,loc,used);
+        if(mm && plannedSeconds(mm) <= TARGET - mainSessionSeconds([...main, cool].filter(Boolean))){
+          main.push({...mm, id:mm.id + "-auto-" + safety});
+        }
+      }
+    }else{
+      break;
+    }
+    safety++;
+  }
+
+  let total = mainSessionSeconds([...main, cool].filter(Boolean));
+  if(total < TARGET){
+    const missing = TARGET - total;
+    main.push(addSessionBuffer(missing));
+  }
+
+  // If somehow over, remove maintenance cards from the end until not over.
+  safety = 0;
+  while(mainSessionSeconds([...main, cool].filter(Boolean)) > TARGET && safety < 20){
+    const idx = [...main].reverse().findIndex(a => a.section === "Maintenance Minute");
+    if(idx === -1) break;
+    const removeIndex = main.length - 1 - idx;
+    main.splice(removeIndex,1);
+    safety++;
+  }
+
+  total = mainSessionSeconds([...main, cool].filter(Boolean));
+  if(total < TARGET){
+    main.push(addSessionBuffer(TARGET - total));
+  }
+
+  return [...main, cool].filter(Boolean);
+}
+
+function buildSession(){
+  const n = parseInt(document.getElementById('attendees').value,10),
+        loc = document.getElementById('location').value,
+        energy = document.getElementById('energy').value,
+        used = new Set();
+
+  const must = ['breathing-reset','mobility-flow','light-bounce-footwork','story-ball'];
+  let cards = must.map(id => activities.find(a => a.id === id)).filter(Boolean);
+  must.forEach(id => used.add(id));
+
+  const plan = [
+    ['Light Reaction',[]],
+    ['Moderate Movement',['Brain & Movement']],
+    ['Teamwork & Laughter',['Brain & Movement']],
+    ['Lower Intensity / Reset',['Brain & Movement']],
+    ['Strength & Resistance',['Team Movement','Teamwork & Laughter']],
+    ['Teamwork & Laughter',['Brain & Movement']],
+    ['Power & Conditioning',['Moderate Movement','Team Movement']],
+    ['Cool Down',[]]
+  ];
+
+  plan.forEach((p,i)=>{
+    let pick = choose(p[0],n,loc,used,energy,p[1]);
+    if(pick) cards.push(pick);
+
+    if(i>0 && i<plan.length-1 && pick && pick.setup_time !== 'low'){
+      let mm = maintenanceCard(n,loc,used);
+      if(mm){
+        cards.push({...mm,id:mm.id+'-'+i});
+      }
+    }
+  });
+
+  let mainCards = fitSessionTo60(cards,n,loc,used,energy);
+
+  let b1 = choose('Teamwork & Laughter',n,loc,used,energy,['Light Reaction','Brain & Movement']);
+  let b2 = choose('Light Reaction',n,loc,used,energy,['Moderate Movement','Lower Intensity / Reset']);
+  let bonusCards = [];
+  if(b1) bonusCards.push({...b1,bonus:true});
+  if(b2) bonusCards.push({...b2,bonus:true});
+
+  session = [...mainCards, ...bonusCards];
+  currentIndex = 0;
+
+  const bonusSeconds = bonusCards.reduce((sum,a)=>sum+plannedSeconds(a),0);
+  document.getElementById('builder').classList.add('hidden');
+  document.getElementById('libraryPanel').classList.add('hidden');
+  document.getElementById('addPanel').classList.add('hidden');
+  document.getElementById('sessionPanel').classList.remove('hidden');
+  document.getElementById('sessionMeta').innerText =
+    `${n} attending • ${loc} • 60-minute main session` + (bonusSeconds ? ` • bonus bank ${timeLabelFromSeconds(bonusSeconds)}` : '');
+
+  showEquipmentChecklist();
+}
 
 /* DHG v3 alert system */
 let dhgAudioCtx = null;
@@ -1287,11 +1491,28 @@ function dhgTestAlert(){
 let totalRemaining=0,roundRemaining=0,roundTotal=0,roundCount=0,currentRound=1,roundMode=false,roundLabels=[];
 let checklistReturnIndex=0,equipmentChecked={};
 
+function explicitRoundSeconds(text){
+  text = String(text || "").replace(/–/g,"-").trim();
+  let m = text.match(/(\d+)(?:\s*-\s*(\d+))?\s*rounds?.*?(\d+)(?:\s*-\s*(\d+))?\s*(?:sec|seconds?)/i);
+  if(!m) return null;
+  return {
+    count: parseInt(m[1],10),
+    seconds: parseInt(m[4] || m[3],10)
+  };
+}
+
 function parseRoundInfo(a){
-  if (Array.isArray(a.round_details) && a.round_details.length > 1) {
+  const explicit = explicitRoundSeconds(a.rounds);
+  const hasDetails = Array.isArray(a.round_details) && a.round_details.length > 1;
+
+  if (hasDetails) {
+    const count = a.round_details.length;
+    const seconds = explicit && explicit.seconds
+      ? explicit.seconds
+      : Math.max(20, Math.round(((a.duration || 1) * 60) / count));
     return {
-      count: a.round_details.length,
-      seconds: Math.max(20, Math.round(((a.duration || 1) * 60) / a.round_details.length)),
+      count,
+      seconds,
       labels: a.round_details
     };
   }
@@ -1299,10 +1520,9 @@ function parseRoundInfo(a){
   const text = (a.rounds || "").replace(/–/g, "-").trim();
   let info = {count:0, seconds:0, labels:[]};
 
-  let m = text.match(/(\d+)(?:\s*-\s*(\d+))?\s*rounds?.*?(\d+)(?:\s*-\s*(\d+))?\s*(?:sec|seconds?)/i);
-  if (m) {
-    info.count = parseInt(m[1], 10);
-    info.seconds = parseInt(m[3], 10);
+  if (explicit) {
+    info.count = explicit.count;
+    info.seconds = explicit.seconds;
   }
 
   const rMatches = [...text.matchAll(/R(\d+)\s*:?\s*([\s\S]*?)(?=\s*R\d+\s*:|$)/gi)];
@@ -1311,7 +1531,9 @@ function parseRoundInfo(a){
     info.labels = rMatches.map(x =>
       ("Round " + x[1] + ": " + x[2]).trim().replace(/\s+/g, " ")
     );
-    info.seconds = Math.max(30, Math.round(((a.duration || 1) * 60) / info.count));
+    if(!info.seconds){
+      info.seconds = Math.max(30,Math.round(((a.duration || 1) * 60) / info.count));
+    }
   }
 
   if (!info.seconds || info.count < 2) return {count:0, seconds:0, labels:[]};
@@ -1327,7 +1549,7 @@ function parseRoundInfo(a){
 }
 function initTimers(a){
   clearInterval(timerInterval);
-  totalRemaining=(a.duration||1)*60;
+  totalRemaining=plannedSeconds(a);
   const r=parseRoundInfo(a);
   roundMode=r.count>1;
   roundCount=r.count||0;
@@ -1401,7 +1623,8 @@ function showEquipmentChecklist(fromHeader=false){
   panel.innerHTML = `
     <div class="section-title">Before You Start</div>
     <div class="big-title">Equipment Checklist</div>
-    <p class="muted">Pack / prepare these before starting the session. You can also return to this checklist from the header button.</p>
+    <p class="muted">Pack / prepare these before starting. Main session is planned to total exactly 60 minutes; bonus cards are extra if needed.</p>
+    <div class="info"><b>Planned Time</b>Main session: 60 mins. Bonus bank: ${timeLabelFromSeconds(session.filter(a=>a.bonus).reduce((s,a)=>s+plannedSeconds(a),0))}</div>
     <div class="equipment-list">${listHtml}</div>
     <div class="equipment-actions">
       <button class="secondary" onclick="resetToBuilder()">Change Session</button>
@@ -1425,7 +1648,7 @@ function renderCard(){
     a.bonus?'<span class="badge orange">Bonus / optional</span>':'',
     `<span class="badge">${a.section}</span>`,
     `<span class="badge blue">${a.intensity}</span>`,
-    `<span class="badge">${a.duration} mins</span>`
+    `<span class="badge">${timeLabelFromSeconds(plannedSeconds(a))}</span>`
   ].join('');
 
   const roundPanel = roundMode ? `
@@ -1461,7 +1684,7 @@ function renderCard(){
     <div>${badges}</div>
     <div class="info-grid">
       <div class="info"><b>Equipment</b>${esc(a.equipment)}</div>
-      <div class="info"><b>Rounds / timing</b>${esc(a.rounds)}</div>
+      <div class="info"><b>Rounds / timing</b>${esc(timingText(a))}</div>
       <div class="info"><b>Setup</b>${esc(a.setup)}</div>
       <div class="info"><b>Coaching note</b>${esc(a.notes)}</div>
     </div>
@@ -1581,7 +1804,7 @@ function pauseTimer(){clearInterval(timerInterval)}
 
 function resetTimer(){
   clearInterval(timerInterval);
-  totalRemaining=(session[currentIndex].duration||1)*60;
+  totalRemaining=plannedSeconds(session[currentIndex]);
   if(roundMode){
     currentRound=1;
     roundRemaining=roundTotal;
