@@ -87,13 +87,22 @@ body.timer-alert::after{
   .round-buttons{grid-template-columns:1fr;}
 }
 
-</style></head><body><header><h1>DHG Fitness Session Builder</h1><p>Version 6 — round text bug fixed and saved activities updated.</p></header><main>
+
+/* DHG v7 equipment checklist */
+.equipment-list{display:grid;gap:8px;margin:12px 0}
+.equipment-item{display:flex;gap:10px;align-items:flex-start;background:#f7f8f5;border:1px solid var(--border);border-radius:12px;padding:10px}
+.equipment-item input{width:auto;margin-top:3px;transform:scale(1.2)}
+.equipment-item small{display:block;color:var(--muted);margin-top:2px}
+.equipment-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+@media(max-width:520px){.equipment-actions{grid-template-columns:1fr}}
+
+</style></head><body><header><h1>DHG Fitness Session Builder</h1><p>Version 7 — build fixed, full round instructions and equipment checklist.</p></header><main>
 <section id="builder" class="card"><h2>Build Session</h2><div class="row"><div class="field"><label>Number attending</label><select id="attendees"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6+</option></select></div><div class="field"><label>Location</label><select id="location"><option value="outdoor" selected>Outdoor</option><option value="indoor">Indoor / Hall</option></select></div><div class="field"><label>Energy</label><select id="energy"><option value="normal" selected>Normal</option><option value="lighter">Lighter</option><option value="higher">Higher</option></select></div></div><div class="row" style="margin-top:12px"><button class="primary" onclick="buildSession()">Build 60-min Session</button><button class="secondary" onclick="showLibrary()">Activity Library</button><button class="secondary" onclick="showAdd()">Add New Activity</button></div><p class="small muted">The generator adds bonus activities at the end. Use Skip if you do not need them.</p></section>
 <section id="sessionPanel" class="hidden"><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="section-title">Session Runner</div><div id="sessionMeta" class="muted small"></div></div><button class="ghost" onclick="resetToBuilder()">Change</button></div><div class="progress"><div id="progressBar"></div></div></div><div id="activityCard" class="card"></div></section>
 <section id="libraryPanel" class="card hidden"><div class="row" style="justify-content:space-between;align-items:center"><h2>Activity Library</h2><button class="ghost" onclick="hidePanels()">Back</button></div><input id="search" placeholder="Search activities..." oninput="renderLibrary()"><div class="row" style="margin-top:8px"><button class="secondary" onclick="exportData()">Export JSON</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import JSON</button><button class="danger" onclick="resetLibrary()">Reset Library</button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)"></div><div id="libraryList"></div></section>
 <section id="addPanel" class="card hidden"><div class="row" style="justify-content:space-between;align-items:center"><h2>Add New Activity</h2><button class="ghost" onclick="hidePanels()">Back</button></div><div class="row"><div class="field"><label>Title</label><input id="newTitle" placeholder="e.g. Story Ball"></div><div class="field"><label>Section</label><select id="newSection"><option>Warm-Up Game</option><option>Light Reaction</option><option>Moderate Movement</option><option>Brain & Movement</option><option>Teamwork & Laughter</option><option>Strength & Resistance</option><option>Power & Conditioning</option><option>Lower Intensity / Reset</option><option>Maintenance Minute</option><option>Team Movement</option></select></div></div><div class="row"><div class="field"><label>Duration minutes</label><input id="newDuration" type="number" value="5"></div><div class="field"><label>Minimum people</label><input id="newMin" type="number" value="3"></div><div class="field"><label>Requires even numbers?</label><select id="newEven"><option value="false">No</option><option value="true">Yes</option></select></div></div><div class="row"><div class="field"><label>Location</label><select id="newLoc"><option value="both">Both</option><option value="outdoor">Outdoor only</option><option value="indoor">Indoor only</option></select></div><div class="field"><label>Intensity</label><select id="newIntensity"><option>low</option><option>low/moderate</option><option>moderate</option><option>moderate/high</option><option>high</option></select></div><div class="field"><label>Fun score</label><select id="newFun"><option>medium</option><option>high</option><option>low</option></select></div></div><label>Equipment</label><input id="newEquipment" placeholder="Cones, ball, bands..."><label>Rounds / Timing</label><input id="newRounds" placeholder="3 rounds x 45 seconds"><label>Setup</label><textarea id="newSetup" rows="2"></textarea><label>How to run</label><textarea id="newHow" rows="3"></textarea><label>Coaching notes</label><textarea id="newNotes" rows="2"></textarea><button class="primary" style="margin-top:12px" onclick="addActivity()">Add Activity</button></section>
 </main><script>
-const DEFAULT_ACTIVITIES [
+const DEFAULT_ACTIVITIES = [
   {
     "id": "breathing-reset",
     "title": "Breathing Reset",
@@ -437,12 +446,7 @@ const DEFAULT_ACTIVITIES [
     "fun": "medium",
     "setup": "Open space.",
     "how": "Group lines up by birthday month, height, shoe size etc without talking.",
-    "notes": "Best for larger groups, not 3-4 people.",
-    "round_details": [
-      "Round 1: Line up silently by birthday month.",
-      "Round 2: Line up silently by height.",
-      "Round 3: Line up silently by shoe size or another easy prompt."
-    ]
+    "notes": "Best for larger groups, not 3-4 people."
   },
   {
     "id": "marker-flip",
@@ -1195,11 +1199,9 @@ const DEFAULT_ACTIVITIES [
     "how": "Before passing, receiver does two shoulder rolls or arm swings, then calls a name and passes.",
     "notes": "Keeps them warm but calm."
   }
-]
 ];
 let activities=loadActivities(),session=[],currentIndex=0,timerInterval=null,remaining=0;let audioCtx=null,audioUnlocked=false;function unlockAudio(){try{if(audioUnlocked)return;const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;audioCtx=new Ctx();if(audioCtx.state==="suspended")audioCtx.resume();audioUnlocked=true}catch(e){}}function playTone(freq,duration,start){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime+start;o.type="square";o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.18,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+duration);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+duration+0.03)}function playEndBuzzer(){try{if(!audioCtx)unlockAudio();if(!audioCtx)return;if(audioCtx.state==="suspended")audioCtx.resume();playTone(440,.18,0);playTone(330,.18,.22);playTone(440,.35,.44)}catch(e){}}function flashTimerDone(){document.body.classList.add("timer-alert");setTimeout(()=>document.body.classList.remove("timer-alert"),3000)}function timerDoneAlert(){playEndBuzzer();flashTimerDone();if(navigator.vibrate)navigator.vibrate([220,90,220,90,350])}
 function loadActivities(){try{const s=localStorage.getItem('dhgActivities');return s?JSON.parse(s):DEFAULT_ACTIVITIES}catch(e){return DEFAULT_ACTIVITIES}}function saveActivities(){localStorage.setItem('dhgActivities',JSON.stringify(activities))}
-
 function migrateSavedActivities(){
   try{
     const defaultMap = new Map(DEFAULT_ACTIVITIES.map(a => [a.id, a]));
@@ -1221,7 +1223,7 @@ function normaliseLocation(loc){return loc==='both'?['indoor','outdoor']:[loc]}f
 function scoreActivity(a,loc,energy){let s=0;if(a.fun==='high')s+=4;if(a.setup_time==='low')s+=2;if(a.setup_time==='high')s-=2;if(a.locations.length===2)s+=1;if(energy==='lighter'&&isHigh(a))s-=6;if(energy==='higher'&&isHigh(a))s+=2;if(loc==='indoor'&&['marker-flip','build-shape','story-ball'].includes(a.id))s+=2;if(loc==='outdoor'&&['tail-tag','steal','bungee-runs'].includes(a.id))s+=2;return s}
 function choose(section,n,loc,used,energy,fallback=[]){let sections=[section,...fallback];let pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(energy==='lighter')pool=pool.filter(a=>!isHigh(a));if(!pool.length)pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(!pool.length)return null;pool.sort((a,b)=>scoreActivity(b,loc,energy)-scoreActivity(a,loc,energy));let max=Math.min(pool.length,4);let pick=pool[Math.floor(Math.random()*max)];used.add(pick.id);return pick}
 function maintenanceCard(n,loc){let pool=activities.filter(a=>a.section==='Maintenance Minute'&&fits(a,n,loc));return pool[Math.floor(Math.random()*pool.length)]||null}
-function buildSession(){const n=parseInt(document.getElementById('attendees').value,10),loc=document.getElementById('location').value,energy=document.getElementById('energy').value,used=new Set();let must=['breathing-reset','mobility-flow','light-bounce-footwork','story-ball'];let cards=must.map(id=>activities.find(a=>a.id===id)).filter(Boolean);must.forEach(id=>used.add(id));let plan=[['Light Reaction',[]],['Moderate Movement',['Brain & Movement']],['Teamwork & Laughter',['Brain & Movement']],['Lower Intensity / Reset',['Brain & Movement']],['Strength & Resistance',['Team Movement','Teamwork & Laughter']],['Teamwork & Laughter',['Brain & Movement']],['Power & Conditioning',['Moderate Movement','Team Movement']],['Cool Down',[]]];plan.forEach((p,i)=>{let pick=choose(p[0],n,loc,used,energy,p[1]);if(pick)cards.push(pick);if(i>0&&i<plan.length-1&&pick&&pick.setup_time!=='low'){let mm=maintenanceCard(n,loc);if(mm)cards.push({...mm,id:mm.id+'-'+i})}});let b1=choose('Teamwork & Laughter',n,loc,used,energy,['Light Reaction','Brain & Movement']);let b2=choose('Light Reaction',n,loc,used,energy,['Moderate Movement','Lower Intensity / Reset']);if(b1)cards.push({...b1,bonus:true});if(b2)cards.push({...b2,bonus:true});session=cards;currentIndex=0;document.getElementById('builder').classList.add('hidden');document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('sessionPanel').classList.remove('hidden');document.getElementById('sessionMeta').innerText=`${n} attending • ${loc} • 60 minutes • ${energy}`;renderCard()}
+function buildSession(){const n=parseInt(document.getElementById('attendees').value,10),loc=document.getElementById('location').value,energy=document.getElementById('energy').value,used=new Set();let must=['breathing-reset','mobility-flow','light-bounce-footwork','story-ball'];let cards=must.map(id=>activities.find(a=>a.id===id)).filter(Boolean);must.forEach(id=>used.add(id));let plan=[['Light Reaction',[]],['Moderate Movement',['Brain & Movement']],['Teamwork & Laughter',['Brain & Movement']],['Lower Intensity / Reset',['Brain & Movement']],['Strength & Resistance',['Team Movement','Teamwork & Laughter']],['Teamwork & Laughter',['Brain & Movement']],['Power & Conditioning',['Moderate Movement','Team Movement']],['Cool Down',[]]];plan.forEach((p,i)=>{let pick=choose(p[0],n,loc,used,energy,p[1]);if(pick)cards.push(pick);if(i>0&&i<plan.length-1&&pick&&pick.setup_time!=='low'){let mm=maintenanceCard(n,loc);if(mm)cards.push({...mm,id:mm.id+'-'+i})}});let b1=choose('Teamwork & Laughter',n,loc,used,energy,['Light Reaction','Brain & Movement']);let b2=choose('Light Reaction',n,loc,used,energy,['Moderate Movement','Lower Intensity / Reset']);if(b1)cards.push({...b1,bonus:true});if(b2)cards.push({...b2,bonus:true});session=cards;currentIndex=0;document.getElementById('builder').classList.add('hidden');document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('sessionPanel').classList.remove('hidden');document.getElementById('sessionMeta').innerText=`${n} attending • ${loc} • 60 minutes • ${energy}`;showEquipmentChecklist()}
 
 /* DHG v3 alert system */
 let dhgAudioCtx = null;
@@ -1278,7 +1280,6 @@ function dhgTestAlert(){
 let totalRemaining=0,roundRemaining=0,roundTotal=0,roundCount=0,currentRound=1,roundMode=false,roundLabels=[];
 
 function parseRoundInfo(a){
-  // Prefer clear, manually-written round details when available.
   if (Array.isArray(a.round_details) && a.round_details.length > 1) {
     return {
       count: a.round_details.length,
@@ -1290,15 +1291,12 @@ function parseRoundInfo(a){
   const text = (a.rounds || "").replace(/–/g, "-").trim();
   let info = {count:0, seconds:0, labels:[]};
 
-  // Examples: "3 rounds x 45 seconds", "3 rounds x 45–60 seconds", "2-3 rounds, 60 seconds each"
   let m = text.match(/(\d+)(?:\s*-\s*(\d+))?\s*rounds?.*?(\d+)(?:\s*-\s*(\d+))?\s*(?:sec|seconds?)/i);
   if (m) {
     info.count = parseInt(m[1], 10);
     info.seconds = parseInt(m[3], 10);
   }
 
-  // Robust R1 / R2 / R3 parser.
-  // It stops only at the next R followed by a number, not at ordinary letters inside words like "normal".
   const rMatches = [...text.matchAll(/R(\d+)\s*:?\s*([\s\S]*?)(?=\s*R\d+\s*:|$)/gi)];
   if (rMatches.length >= 2) {
     info.count = rMatches.length;
@@ -1308,9 +1306,7 @@ function parseRoundInfo(a){
     info.seconds = Math.max(30, Math.round(((a.duration || 1) * 60) / info.count));
   }
 
-  if (!info.seconds || info.count < 2) {
-    return {count:0, seconds:0, labels:[]};
-  }
+  if (!info.seconds || info.count < 2) return {count:0, seconds:0, labels:[]};
 
   if (!info.labels.length) {
     info.labels = Array.from(
@@ -1331,6 +1327,55 @@ function initTimers(a){
   roundRemaining=roundTotal;
   currentRound=1;
   roundLabels=r.labels||[];
+}
+
+
+function cleanEquipmentName(e){
+  return String(e||"").trim().replace(/\s+/g," ");
+}
+function isNoEquipment(e){
+  const s=cleanEquipmentName(e).toLowerCase();
+  return !s || s==="none" || s==="n/a" || s==="none.";
+}
+function buildEquipmentList(){
+  const map = new Map();
+  session.forEach(a => {
+    if(isNoEquipment(a.equipment)) return;
+    const key = cleanEquipmentName(a.equipment);
+    if(!map.has(key)) map.set(key,{name:key,activities:[],bonus:false});
+    const item = map.get(key);
+    item.activities.push(a.title + (a.bonus ? " (bonus)" : ""));
+    if(a.bonus) item.bonus = true;
+  });
+  return Array.from(map.values()).sort((a,b)=>a.name.localeCompare(b.name));
+}
+function showEquipmentChecklist(){
+  clearInterval(timerInterval);
+  currentIndex = 0;
+  const panel = document.getElementById("activityCard");
+  const list = buildEquipmentList();
+
+  const listHtml = list.length ? list.map((item,i)=>`
+    <label class="equipment-item">
+      <input type="checkbox">
+      <span>
+        <b>${esc(item.name)}</b>
+        <small>For: ${esc(item.activities.join(", "))}</small>
+      </span>
+    </label>
+  `).join("") : `<p>No equipment needed for this generated session.</p>`;
+
+  panel.innerHTML = `
+    <div class="section-title">Before You Start</div>
+    <div class="big-title">Equipment Checklist</div>
+    <p class="muted">Pack / prepare these before starting the session. Bonus activity equipment is marked in the activity name.</p>
+    <div class="equipment-list">${listHtml}</div>
+    <div class="equipment-actions">
+      <button class="secondary" onclick="resetToBuilder()">Change Session</button>
+      <button class="primary" onclick="renderCard()">Start Session</button>
+    </div>
+  `;
+  updateProgress();
 }
 
 function renderCard(){
@@ -1529,7 +1574,8 @@ function formatTime(s){
 
 function resetToBuilder(){clearInterval(timerInterval);document.getElementById('sessionPanel').classList.add('hidden');document.getElementById('builder').classList.remove('hidden')}function hidePanels(){document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('builder').classList.remove('hidden')}function showLibrary(){document.getElementById('builder').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('libraryPanel').classList.remove('hidden');renderLibrary()}function showAdd(){document.getElementById('builder').classList.add('hidden');document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.remove('hidden')}
 function renderLibrary(){let q=(document.getElementById('search').value||'').toLowerCase(),list=document.getElementById('libraryList');let rows=activities.filter(a=>!q||(a.title+a.section+a.equipment+a.how).toLowerCase().includes(q));rows.sort((a,b)=>a.section.localeCompare(b.section)||a.title.localeCompare(b.title));list.innerHTML=rows.map(a=>`<div class="list-item"><b>${esc(a.title)}</b><br><span class="badge">${a.section}</span><span class="badge">${a.duration} mins</span><span class="badge">${a.locations.join(', ')}</span><div class="small muted">${esc(a.how)}</div></div>`).join('')}
-function addActivity(){let title=document.getElementById('newTitle').value.trim();if(!title)return alert('Please add a title.');let locVal=document.getElementById('newLoc').value;let a={id:title.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now(),title,section:document.getElementById('newSection').value,duration:parseInt(document.getElementById('newDuration').value,10)||5,rounds:document.getElementById('newRounds').value,intensity:document.getElementById('newIntensity').value,locations:normaliseLocation(locVal),min:parseInt(document.getElementById('newMin').value,10)||1,max:99,requires_even:document.getElementById('newEven').value==='true',equipment:document.getElementById('newEquipment').value,setup_time:'medium',fun:document.getElementById('newFun').value,setup:document.getElementById('newSetup').value,how:document.getElementById('newHow').value,notes:document.getElementById('newNotes').value};activities.push(a);saveActivities();alert('Activity added.');showLibrary()}
+function addActivity(){let title=document.getElementById('newTitle').value.trim();if(!title)return alert('Please add a title.');let locVal=document.getElementById('newLoc').value;let a={id:title.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now(),title,section:document.getElementById('newSection').value,duration:parseInt(document.getElementById('newDuration').value,10)||5,rounds:document.getElementById('newRounds').value,
+    round_details:(document.getElementById('newRoundDetails') ? document.getElementById('newRoundDetails').value : '').split('\n').map(x=>x.trim()).filter(Boolean),intensity:document.getElementById('newIntensity').value,locations:normaliseLocation(locVal),min:parseInt(document.getElementById('newMin').value,10)||1,max:99,requires_even:document.getElementById('newEven').value==='true',equipment:document.getElementById('newEquipment').value,setup_time:'medium',fun:document.getElementById('newFun').value,setup:document.getElementById('newSetup').value,how:document.getElementById('newHow').value,notes:document.getElementById('newNotes').value};activities.push(a);saveActivities();alert('Activity added.');showLibrary()}
 function exportData(){let blob=new Blob([JSON.stringify(activities,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='dhg-activity-library.json';a.click();URL.revokeObjectURL(url)}function importData(event){let file=event.target.files[0];if(!file)return;let reader=new FileReader();reader.onload=e=>{try{activities=JSON.parse(e.target.result);saveActivities();renderLibrary();alert('Imported.')}catch(err){alert('Could not import JSON.')}};reader.readAsText(file)}function resetLibrary(){if(confirm('Reset library to the built-in version? This removes activities you added on this device.')){activities=DEFAULT_ACTIVITIES;saveActivities();renderLibrary()}}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 </script></body></html>
