@@ -17,8 +17,40 @@ body.timer-alert::before{
   to{opacity:1}
 }
 
-</style></head><body><header><h1>DHG Fitness Session Builder</h1><p>Build a 60-minute session in seconds. One card at a time. Timer buzzer + flash added.</p></header><main>
-<section id="builder" class="card"><h2>Build Session</h2><div class="row"><div class="field"><label>Number attending</label><select id="attendees"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6+</option></select></div><div class="field"><label>Location</label><select id="location"><option value="outdoor" selected>Outdoor</option><option value="indoor">Indoor / Hall</option></select></div><div class="field"><label>Energy</label><select id="energy"><option value="normal" selected>Normal</option><option value="lighter">Lighter</option><option value="higher">Higher</option></select></div></div><div class="row" style="margin-top:12px"><button class="primary" onclick="buildSession()">Build 60-min Session</button><button class="secondary" onclick="showLibrary()">Activity Library</button><button class="secondary" onclick="showAdd()">Add New Activity</button></div><p class="small muted">The generator adds bonus activities at the end. Use Skip if you do not need them.</p></section>
+
+/* DHG v3 stronger timer alert */
+body.timer-alert{
+  animation: dhgBodyFlash .22s alternate 12;
+}
+body.timer-alert::after{
+  content:"TIME!";
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:clamp(3rem,18vw,8rem);
+  font-weight:900;
+  color:white;
+  background:rgba(242,140,40,.88);
+  border:18px solid #1f7a4d;
+  box-shadow:inset 0 0 40px #ffffff,0 0 36px #f28c28;
+  pointer-events:none;
+  z-index:999999;
+  animation: dhgAlertPulse .22s alternate 12;
+}
+@keyframes dhgBodyFlash{
+  from{background:#f6f7f2}
+  to{background:#ff9f1c}
+}
+@keyframes dhgAlertPulse{
+  from{opacity:.25; transform:scale(.98)}
+  to{opacity:1; transform:scale(1)}
+}
+
+</style></head><body><header><h1>DHG Fitness Session Builder</h1><p>Version 3 — strong buzzer, full-screen flash and vibration.</p></header><main>
+<section id="builder" class="card"><h2>Build Session</h2><div class="row"><div class="field"><label>Number attending</label><select id="attendees"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6+</option></select></div><div class="field"><label>Location</label><select id="location"><option value="outdoor" selected>Outdoor</option><option value="indoor">Indoor / Hall</option></select></div><div class="field"><label>Energy</label><select id="energy"><option value="normal" selected>Normal</option><option value="lighter">Lighter</option><option value="higher">Higher</option></select></div></div><div class="row" style="margin-top:12px"><button class="primary" onclick="buildSession()">Build 60-min Session</button><button class="secondary" onclick="showLibrary()">Activity Library</button><button class="secondary" onclick="showAdd()">Add New Activity</button>
+      <button class="dark" onclick="dhgTestAlert()">Test Buzzer / Flash</button></div><p class="small muted">The generator adds bonus activities at the end. Use Skip if you do not need them.</p></section>
 <section id="sessionPanel" class="hidden"><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="section-title">Session Runner</div><div id="sessionMeta" class="muted small"></div></div><button class="ghost" onclick="resetToBuilder()">Change</button></div><div class="progress"><div id="progressBar"></div></div></div><div id="activityCard" class="card"></div></section>
 <section id="libraryPanel" class="card hidden"><div class="row" style="justify-content:space-between;align-items:center"><h2>Activity Library</h2><button class="ghost" onclick="hidePanels()">Back</button></div><input id="search" placeholder="Search activities..." oninput="renderLibrary()"><div class="row" style="margin-top:8px"><button class="secondary" onclick="exportData()">Export JSON</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import JSON</button><button class="danger" onclick="resetLibrary()">Reset Library</button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)"></div><div id="libraryList"></div></section>
 <section id="addPanel" class="card hidden"><div class="row" style="justify-content:space-between;align-items:center"><h2>Add New Activity</h2><button class="ghost" onclick="hidePanels()">Back</button></div><div class="row"><div class="field"><label>Title</label><input id="newTitle" placeholder="e.g. Story Ball"></div><div class="field"><label>Section</label><select id="newSection"><option>Warm-Up Game</option><option>Light Reaction</option><option>Moderate Movement</option><option>Brain & Movement</option><option>Teamwork & Laughter</option><option>Strength & Resistance</option><option>Power & Conditioning</option><option>Lower Intensity / Reset</option><option>Maintenance Minute</option><option>Team Movement</option></select></div></div><div class="row"><div class="field"><label>Duration minutes</label><input id="newDuration" type="number" value="5"></div><div class="field"><label>Minimum people</label><input id="newMin" type="number" value="3"></div><div class="field"><label>Requires even numbers?</label><select id="newEven"><option value="false">No</option><option value="true">Yes</option></select></div></div><div class="row"><div class="field"><label>Location</label><select id="newLoc"><option value="both">Both</option><option value="outdoor">Outdoor only</option><option value="indoor">Indoor only</option></select></div><div class="field"><label>Intensity</label><select id="newIntensity"><option>low</option><option>low/moderate</option><option>moderate</option><option>moderate/high</option><option>high</option></select></div><div class="field"><label>Fun score</label><select id="newFun"><option>medium</option><option>high</option><option>low</option></select></div></div><label>Equipment</label><input id="newEquipment" placeholder="Cones, ball, bands..."><label>Rounds / Timing</label><input id="newRounds" placeholder="3 rounds x 45 seconds"><label>Setup</label><textarea id="newSetup" rows="2"></textarea><label>How to run</label><textarea id="newHow" rows="3"></textarea><label>Coaching notes</label><textarea id="newNotes" rows="2"></textarea><button class="primary" style="margin-top:12px" onclick="addActivity()">Add Activity</button></section>
@@ -951,10 +983,62 @@ function scoreActivity(a,loc,energy){let s=0;if(a.fun==='high')s+=4;if(a.setup_t
 function choose(section,n,loc,used,energy,fallback=[]){let sections=[section,...fallback];let pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(energy==='lighter')pool=pool.filter(a=>!isHigh(a));if(!pool.length)pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(!pool.length)return null;pool.sort((a,b)=>scoreActivity(b,loc,energy)-scoreActivity(a,loc,energy));let max=Math.min(pool.length,4);let pick=pool[Math.floor(Math.random()*max)];used.add(pick.id);return pick}
 function maintenanceCard(n,loc){let pool=activities.filter(a=>a.section==='Maintenance Minute'&&fits(a,n,loc));return pool[Math.floor(Math.random()*pool.length)]||null}
 function buildSession(){const n=parseInt(document.getElementById('attendees').value,10),loc=document.getElementById('location').value,energy=document.getElementById('energy').value,used=new Set();let must=['breathing-reset','mobility-flow','light-bounce-footwork','story-ball'];let cards=must.map(id=>activities.find(a=>a.id===id)).filter(Boolean);must.forEach(id=>used.add(id));let plan=[['Light Reaction',[]],['Moderate Movement',['Brain & Movement']],['Teamwork & Laughter',['Brain & Movement']],['Lower Intensity / Reset',['Brain & Movement']],['Strength & Resistance',['Team Movement','Teamwork & Laughter']],['Teamwork & Laughter',['Brain & Movement']],['Power & Conditioning',['Moderate Movement','Team Movement']],['Cool Down',[]]];plan.forEach((p,i)=>{let pick=choose(p[0],n,loc,used,energy,p[1]);if(pick)cards.push(pick);if(i>0&&i<plan.length-1&&pick&&pick.setup_time!=='low'){let mm=maintenanceCard(n,loc);if(mm)cards.push({...mm,id:mm.id+'-'+i})}});let b1=choose('Teamwork & Laughter',n,loc,used,energy,['Light Reaction','Brain & Movement']);let b2=choose('Light Reaction',n,loc,used,energy,['Moderate Movement','Lower Intensity / Reset']);if(b1)cards.push({...b1,bonus:true});if(b2)cards.push({...b2,bonus:true});session=cards;currentIndex=0;document.getElementById('builder').classList.add('hidden');document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('sessionPanel').classList.remove('hidden');document.getElementById('sessionMeta').innerText=`${n} attending • ${loc} • 60 minutes • ${energy}`;renderCard()}
-function renderCard(){clearInterval(timerInterval);const a=session[currentIndex],panel=document.getElementById('activityCard');if(!a){panel.innerHTML='<h2>Session complete</h2><p>Good job. You reached the end.</p><button class="primary" onclick="resetToBuilder()">Build Another Session</button>';return}remaining=(a.duration||1)*60;let badges=[a.bonus?'<span class="badge orange">Bonus / optional</span>':'',`<span class="badge">${a.section}</span>`,`<span class="badge blue">${a.intensity}</span>`,`<span class="badge">${a.duration} mins</span>`].join('');panel.innerHTML=`<div class="section-title">Card ${currentIndex+1} of ${session.length}</div><div class="big-title">${esc(a.title)}</div><div>${badges}</div><div class="info-grid"><div class="info"><b>Equipment</b>${esc(a.equipment)}</div><div class="info"><b>Rounds / timing</b>${esc(a.rounds)}</div><div class="info"><b>Setup</b>${esc(a.setup)}</div><div class="info"><b>Coaching note</b>${esc(a.notes)}</div></div><h3>How to run</h3><p>${esc(a.how)}</p><div class="timer"><div><div class="muted small">Activity Timer</div><div id="time" class="time">${formatTime(remaining)}</div></div><div><button class="secondary" onclick="startTimer()">Start</button> <button class="secondary" onclick="pauseTimer()">Pause</button> <button class="secondary" onclick="resetTimer()">Reset</button><button class="secondary" onclick="timerDoneAlert()">Test</button></div></div><div class="nav-buttons"><button class="secondary" onclick="prevCard()">Back</button><button class="danger" onclick="skipCard()">Skip</button><button class="primary" onclick="nextCard()">Next</button></div><button class="ghost" onclick="replaceCard()">Replace this activity</button>`;updateProgress()}
+
+/* DHG v3 alert system */
+let dhgAudioCtx = null;
+function dhgUnlockAudio(){
+  try{
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return false;
+    if(!dhgAudioCtx) dhgAudioCtx = new Ctx();
+    if(dhgAudioCtx.state === "suspended") dhgAudioCtx.resume();
+    return true;
+  }catch(e){ return false; }
+}
+function dhgBeep(freq, start, duration, volume){
+  if(!dhgAudioCtx) return;
+  const t = dhgAudioCtx.currentTime + start;
+  const osc = dhgAudioCtx.createOscillator();
+  const gain = dhgAudioCtx.createGain();
+  osc.type = "square";
+  osc.frequency.setValueAtTime(freq, t);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(volume || 0.45, t + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+  osc.connect(gain);
+  gain.connect(dhgAudioCtx.destination);
+  osc.start(t);
+  osc.stop(t + duration + 0.03);
+}
+function dhgPlayBuzzer(){
+  dhgUnlockAudio();
+  if(!dhgAudioCtx) return;
+  dhgBeep(880, 0.00, 0.22, 0.55);
+  dhgBeep(660, 0.28, 0.22, 0.55);
+  dhgBeep(880, 0.56, 0.22, 0.55);
+  dhgBeep(660, 0.84, 0.22, 0.55);
+  dhgBeep(440, 1.12, 0.55, 0.65);
+}
+function dhgFlashScreen(){
+  document.body.classList.remove("timer-alert");
+  void document.body.offsetWidth;
+  document.body.classList.add("timer-alert");
+  setTimeout(()=>document.body.classList.remove("timer-alert"), 3200);
+}
+function timerDoneAlert(){
+  dhgPlayBuzzer();
+  dhgFlashScreen();
+  if(navigator.vibrate) navigator.vibrate([500,150,500,150,800]);
+}
+function dhgTestAlert(){
+  dhgUnlockAudio();
+  timerDoneAlert();
+}
+
+function renderCard(){clearInterval(timerInterval);const a=session[currentIndex],panel=document.getElementById('activityCard');if(!a){panel.innerHTML='<h2>Session complete</h2><p>Good job. You reached the end.</p><button class="primary" onclick="resetToBuilder()">Build Another Session</button>';return}remaining=(a.duration||1)*60;let badges=[a.bonus?'<span class="badge orange">Bonus / optional</span>':'',`<span class="badge">${a.section}</span>`,`<span class="badge blue">${a.intensity}</span>`,`<span class="badge">${a.duration} mins</span>`].join('');panel.innerHTML=`<div class="section-title">Card ${currentIndex+1} of ${session.length}</div><div class="big-title">${esc(a.title)}</div><div>${badges}</div><div class="info-grid"><div class="info"><b>Equipment</b>${esc(a.equipment)}</div><div class="info"><b>Rounds / timing</b>${esc(a.rounds)}</div><div class="info"><b>Setup</b>${esc(a.setup)}</div><div class="info"><b>Coaching note</b>${esc(a.notes)}</div></div><h3>How to run</h3><p>${esc(a.how)}</p><div class="timer"><div><div class="muted small">Activity Timer</div><div id="time" class="time">${formatTime(remaining)}</div></div><div><button class="secondary" onclick="startTimer()">Start</button> <button class="secondary" onclick="pauseTimer()">Pause</button> <button class="secondary" onclick="resetTimer()">Reset</button><button class="secondary" onclick="dhgTestAlert()">Test Alert</button></div></div><div class="nav-buttons"><button class="secondary" onclick="prevCard()">Back</button><button class="danger" onclick="skipCard()">Skip</button><button class="primary" onclick="nextCard()">Next</button></div><button class="ghost" onclick="replaceCard()">Replace this activity</button>`;updateProgress()}
 function updateProgress(){document.getElementById('progressBar').style.width=(session.length?(currentIndex/session.length)*100:0)+'%'}function nextCard(){currentIndex++;renderCard()}function prevCard(){if(currentIndex>0)currentIndex--;renderCard()}function skipCard(){nextCard()}
 function replaceCard(){let old=session[currentIndex],n=parseInt(document.getElementById('attendees').value,10),loc=document.getElementById('location').value,energy=document.getElementById('energy').value,used=new Set(session.map(a=>String(a.id).replace(/-\d+$/,'')));used.delete(String(old.id).replace(/-\d+$/,''));let repl=choose(old.section,n,loc,used,energy,['Brain & Movement','Teamwork & Laughter','Light Reaction','Moderate Movement','Lower Intensity / Reset']);if(repl){session[currentIndex]=repl;renderCard()}else alert('No suitable replacement found for this slot.')}
-function startTimer(){unlockAudio();clearInterval(timerInterval);timerInterval=setInterval(()=>{remaining--;if(remaining<=0){remaining=0;clearInterval(timerInterval);timerDoneAlert()}document.getElementById('time').innerText=formatTime(remaining)},1000)}function pauseTimer(){clearInterval(timerInterval)}function resetTimer(){remaining=(session[currentIndex].duration||1)*60;document.getElementById('time').innerText=formatTime(remaining)}function formatTime(s){let m=Math.floor(s/60),sec=s%60;return `${m}:${String(sec).padStart(2,'0')}`}
+function startTimer(){dhgUnlockAudio(); if(typeof unlockAudio==='function') unlockAudio(); clearInterval(timerInterval);timerInterval=setInterval(()=>{remaining--;if(remaining<=0){remaining=0;clearInterval(timerInterval);timerDoneAlert()}document.getElementById('time').innerText=formatTime(remaining)},1000)}function pauseTimer(){clearInterval(timerInterval)}function resetTimer(){remaining=(session[currentIndex].duration||1)*60;document.getElementById('time').innerText=formatTime(remaining)}function formatTime(s){let m=Math.floor(s/60),sec=s%60;return `${m}:${String(sec).padStart(2,'0')}`}
 function resetToBuilder(){clearInterval(timerInterval);document.getElementById('sessionPanel').classList.add('hidden');document.getElementById('builder').classList.remove('hidden')}function hidePanels(){document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('builder').classList.remove('hidden')}function showLibrary(){document.getElementById('builder').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('libraryPanel').classList.remove('hidden');renderLibrary()}function showAdd(){document.getElementById('builder').classList.add('hidden');document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.remove('hidden')}
 function renderLibrary(){let q=(document.getElementById('search').value||'').toLowerCase(),list=document.getElementById('libraryList');let rows=activities.filter(a=>!q||(a.title+a.section+a.equipment+a.how).toLowerCase().includes(q));rows.sort((a,b)=>a.section.localeCompare(b.section)||a.title.localeCompare(b.title));list.innerHTML=rows.map(a=>`<div class="list-item"><b>${esc(a.title)}</b><br><span class="badge">${a.section}</span><span class="badge">${a.duration} mins</span><span class="badge">${a.locations.join(', ')}</span><div class="small muted">${esc(a.how)}</div></div>`).join('')}
 function addActivity(){let title=document.getElementById('newTitle').value.trim();if(!title)return alert('Please add a title.');let locVal=document.getElementById('newLoc').value;let a={id:title.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now(),title,section:document.getElementById('newSection').value,duration:parseInt(document.getElementById('newDuration').value,10)||5,rounds:document.getElementById('newRounds').value,intensity:document.getElementById('newIntensity').value,locations:normaliseLocation(locVal),min:parseInt(document.getElementById('newMin').value,10)||1,max:99,requires_even:document.getElementById('newEven').value==='true',equipment:document.getElementById('newEquipment').value,setup_time:'medium',fun:document.getElementById('newFun').value,setup:document.getElementById('newSetup').value,how:document.getElementById('newHow').value,notes:document.getElementById('newNotes').value};activities.push(a);saveActivities();alert('Activity added.');showLibrary()}
