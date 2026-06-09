@@ -1,0 +1,946 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DHG Fitness Session Builder</title><style>
+:root{--bg:#f6f7f2;--card:#fff;--ink:#1f2933;--muted:#65717c;--accent:#f28c28;--green:#1f7a4d;--border:#e1e4de;--danger:#b42318}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}header{padding:16px;background:linear-gradient(135deg,#1f7a4d,#245c44);color:#fff}header h1{margin:0;font-size:1.35rem}header p{margin:4px 0 0;opacity:.9;font-size:.9rem}main{max-width:760px;margin:0 auto;padding:14px}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin:12px 0}.row{display:flex;gap:10px;flex-wrap:wrap}.field{flex:1;min-width:145px}label{display:block;font-size:.8rem;color:var(--muted);margin:8px 0 4px}select,input,textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:12px;background:#fff;font:inherit}button{border:0;border-radius:14px;padding:12px 14px;font-weight:700;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#e9eee8;color:var(--ink)}.dark{background:#1f2933;color:#fff}.ghost{background:transparent;color:var(--green);padding:8px}.danger{background:#ffe5e2;color:var(--danger)}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#eef4ee;margin:3px 4px 3px 0;font-size:.78rem;color:#245c44}.orange{background:#fff0df;color:#9a4b00}.blue{background:#eaf1ff;color:#214f8f}h2,h3{margin:8px 0}.muted{color:var(--muted)}.big-title{font-size:1.45rem;margin:6px 0}.section-title{font-size:.85rem;color:var(--green);font-weight:800;text-transform:uppercase;letter-spacing:.04em}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.info{background:#f7f8f5;border:1px solid var(--border);border-radius:12px;padding:10px}.info b{display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;margin-bottom:2px}.nav-buttons{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}.timer{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f7f8f5;border:1px solid var(--border);border-radius:14px;padding:10px;margin-top:12px}.time{font-size:1.8rem;font-weight:900;font-variant-numeric:tabular-nums}.small{font-size:.86rem}.list-item{border-bottom:1px solid var(--border);padding:10px 0}.hidden{display:none!important}.progress{height:10px;background:#e9eee8;border-radius:999px;overflow:hidden;margin:10px 0 0}.progress>div{height:100%;background:var(--accent);width:0%}@media(max-width:520px){.info-grid{grid-template-columns:1fr}.nav-buttons{grid-template-columns:1fr}}
+</style></head><body><header><h1>DHG Fitness Session Builder</h1><p>Build a 60-minute session in seconds. One card at a time.</p></header><main>
+<section id="builder" class="card"><h2>Build Session</h2><div class="row"><div class="field"><label>Number attending</label><select id="attendees"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6+</option></select></div><div class="field"><label>Location</label><select id="location"><option value="outdoor" selected>Outdoor</option><option value="indoor">Indoor / Hall</option></select></div><div class="field"><label>Energy</label><select id="energy"><option value="normal" selected>Normal</option><option value="lighter">Lighter</option><option value="higher">Higher</option></select></div></div><div class="row" style="margin-top:12px"><button class="primary" onclick="buildSession()">Build 60-min Session</button><button class="secondary" onclick="showLibrary()">Activity Library</button><button class="secondary" onclick="showAdd()">Add New Activity</button></div><p class="small muted">The generator adds bonus activities at the end. Use Skip if you do not need them.</p></section>
+<section id="sessionPanel" class="hidden"><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="section-title">Session Runner</div><div id="sessionMeta" class="muted small"></div></div><button class="ghost" onclick="resetToBuilder()">Change</button></div><div class="progress"><div id="progressBar"></div></div></div><div id="activityCard" class="card"></div></section>
+<section id="libraryPanel" class="card hidden"><div class="row" style="justify-content:space-between;align-items:center"><h2>Activity Library</h2><button class="ghost" onclick="hidePanels()">Back</button></div><input id="search" placeholder="Search activities..." oninput="renderLibrary()"><div class="row" style="margin-top:8px"><button class="secondary" onclick="exportData()">Export JSON</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import JSON</button><button class="danger" onclick="resetLibrary()">Reset Library</button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)"></div><div id="libraryList"></div></section>
+<section id="addPanel" class="card hidden"><div class="row" style="justify-content:space-between;align-items:center"><h2>Add New Activity</h2><button class="ghost" onclick="hidePanels()">Back</button></div><div class="row"><div class="field"><label>Title</label><input id="newTitle" placeholder="e.g. Story Ball"></div><div class="field"><label>Section</label><select id="newSection"><option>Warm-Up Game</option><option>Light Reaction</option><option>Moderate Movement</option><option>Brain & Movement</option><option>Teamwork & Laughter</option><option>Strength & Resistance</option><option>Power & Conditioning</option><option>Lower Intensity / Reset</option><option>Maintenance Minute</option><option>Team Movement</option></select></div></div><div class="row"><div class="field"><label>Duration minutes</label><input id="newDuration" type="number" value="5"></div><div class="field"><label>Minimum people</label><input id="newMin" type="number" value="3"></div><div class="field"><label>Requires even numbers?</label><select id="newEven"><option value="false">No</option><option value="true">Yes</option></select></div></div><div class="row"><div class="field"><label>Location</label><select id="newLoc"><option value="both">Both</option><option value="outdoor">Outdoor only</option><option value="indoor">Indoor only</option></select></div><div class="field"><label>Intensity</label><select id="newIntensity"><option>low</option><option>low/moderate</option><option>moderate</option><option>moderate/high</option><option>high</option></select></div><div class="field"><label>Fun score</label><select id="newFun"><option>medium</option><option>high</option><option>low</option></select></div></div><label>Equipment</label><input id="newEquipment" placeholder="Cones, ball, bands..."><label>Rounds / Timing</label><input id="newRounds" placeholder="3 rounds x 45 seconds"><label>Setup</label><textarea id="newSetup" rows="2"></textarea><label>How to run</label><textarea id="newHow" rows="3"></textarea><label>Coaching notes</label><textarea id="newNotes" rows="2"></textarea><button class="primary" style="margin-top:12px" onclick="addActivity()">Add Activity</button></section>
+</main><script>
+const DEFAULT_ACTIVITIES = [
+  {
+    "id": "breathing-reset",
+    "title": "Breathing Reset",
+    "section": "Signature Start",
+    "duration": 1,
+    "rounds": "3-4 rounds: in 4, hold 4, out 4.",
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 1,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "None",
+    "setup_time": "low",
+    "fun": "low",
+    "setup": "Stand comfortably in a quiet space. Eyes closed only if safe.",
+    "how": "Invite everyone to arrive, settle and switch off from the week. Run a calm 4-4-4 breathing pattern.",
+    "notes": "Keep as the calm DHG signature start."
+  },
+  {
+    "id": "mobility-flow",
+    "title": "Mobility Flow",
+    "section": "Signature Start",
+    "duration": 3,
+    "rounds": "Continuous flow for 3 minutes.",
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 1,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "None",
+    "setup_time": "low",
+    "fun": "low",
+    "setup": "Loose circle or facing coach.",
+    "how": "Arm swings, shoulder rolls, rotations, side leans, squat and reach, ankle/knee/hip looseners.",
+    "notes": "Change the theme slightly each week."
+  },
+  {
+    "id": "light-bounce-footwork",
+    "title": "Light Bounce & Footwork Flow",
+    "section": "Signature Start",
+    "duration": 3,
+    "rounds": "30-40 seconds each movement.",
+    "intensity": "low/moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 1,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "None",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Spread out safely.",
+    "how": "Light bounce routine: one foot at a time, feet together, low knees, side-to-side, front-back, switch foot.",
+    "notes": "Keep low impact and playful."
+  },
+  {
+    "id": "story-ball",
+    "title": "Story Ball",
+    "section": "Warm-Up Game",
+    "duration": 5,
+    "rounds": "R1 normal walking. R2 side-stepping. R3 three steps forwards / three steps backwards.",
+    "intensity": "low/moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Small soft ball / light football",
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Loose circle or open space. Everyone moves gently as the ball is passed.",
+    "how": "Coach starts with one word. Pass the ball while calling someone’s name. The catcher adds one word, calls another name, and passes. Keep one continuous story going.",
+    "notes": "Do not overthink it. First word that comes into your head. Drop it, laugh and continue."
+  },
+  {
+    "id": "hot-potato",
+    "title": "Warm-Up Hot Potato",
+    "section": "Warm-Up Game",
+    "duration": 4,
+    "rounds": "3 rounds x 45-60 seconds.",
+    "intensity": "low/moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Small rubber football",
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Loose circle, everyone moving gently.",
+    "how": "Keep moving while passing/catching. If the ball drops, reset quickly. Add light actions such as turn, reach, clap or gentle squat if suitable.",
+    "notes": "Good warm-up or maintenance filler."
+  },
+  {
+    "id": "grab-cone-jog",
+    "title": "Grab the Cone - Jogging",
+    "section": "Light Reaction",
+    "duration": 4,
+    "rounds": "3 rounds x 45 seconds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "1 cone per pair/group",
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "People stand around a cone with space to move.",
+    "how": "Call shoulders, knees, toes, jump, turn, grab. They react to commands and only grab when called.",
+    "notes": "Strong early-session laughter activity."
+  },
+  {
+    "id": "grab-cone-low",
+    "title": "Grab the Cone - Low Squat",
+    "section": "Light Reaction",
+    "duration": 4,
+    "rounds": "3 rounds x 40-45 seconds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "1 cone per pair/group",
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Same as cone grab, slightly lower stance.",
+    "how": "Use shoulders, knees, toes, grab. Offer higher stance option for knees.",
+    "notes": "Avoid making it too low for knee-sensitive participants."
+  },
+  {
+    "id": "cone-reaction-sprint",
+    "title": "Cone Reaction Sprint",
+    "section": "Light Reaction",
+    "duration": 5,
+    "rounds": "3 rounds x 45-60 seconds.",
+    "intensity": "moderate/high",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "5 cones in cross shape",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "Centre cone with cones left/right/front/back.",
+    "how": "Call left, right, floor, sprint, backpedal. Participants react, touch cone, return to centre.",
+    "notes": "Short bursts only. Do not place after another high-energy game."
+  },
+  {
+    "id": "tail-tag",
+    "title": "Tail Tag",
+    "section": "Moderate Movement",
+    "duration": 5,
+    "rounds": "4-6 rounds x 20-30 seconds.",
+    "intensity": "high",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Bib/tail",
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Mark a safe playing area.",
+    "how": "One player has the tail. Others try to take it. Rotate quickly so everyone gets a go.",
+    "notes": "Great fun but tiring. Keep short."
+  },
+  {
+    "id": "box-cone-running",
+    "title": "Box Cone Running",
+    "section": "Moderate Movement",
+    "duration": 5,
+    "rounds": "2-3 rounds x 60 seconds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "4-8 cones",
+    "setup_time": "medium",
+    "fun": "medium",
+    "setup": "Set cones in a box or zig-zag route.",
+    "how": "Run to first cone, side skip, run forward, side skip, then walk/backpedal to start.",
+    "notes": "Moderate movement without too much chaos."
+  },
+  {
+    "id": "cone-circles",
+    "title": "Cone Circles",
+    "section": "Moderate Movement",
+    "duration": 4,
+    "rounds": "2-3 rounds x 45-60 seconds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Line of cones",
+    "setup_time": "medium",
+    "fun": "medium",
+    "setup": "Place cones in a straight or curved line.",
+    "how": "Run to cone, circle around backwards, move to next cone. Walk back to start.",
+    "notes": "Keep space clear and safe."
+  },
+  {
+    "id": "in-out-running",
+    "title": "In-and-Out Running",
+    "section": "Moderate Movement",
+    "duration": 4,
+    "rounds": "2-3 rounds x 45-60 seconds.",
+    "intensity": "moderate/high",
+    "locations": [
+      "outdoor",
+      "indoor"
+    ],
+    "min": 3,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Cones optional",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Participants line up with space between them.",
+    "how": "Person at back weaves in and out to the front; new back person continues.",
+    "notes": "Indoors only if space is enough."
+  },
+  {
+    "id": "shuttle-memory",
+    "title": "Shuttle Cone Memory Game",
+    "section": "Brain & Movement",
+    "duration": 6,
+    "rounds": "3 rounds x 60-75 seconds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Numbered or coloured cones",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "Place cones/markers in a line or small grid.",
+    "how": "Call short colour/number sequences. Participants remember and touch in order before returning to start.",
+    "notes": "Movement plus brain without exhausting everyone."
+  },
+  {
+    "id": "silent-line-up",
+    "title": "Silent Line-Up",
+    "section": "Brain & Movement",
+    "duration": 4,
+    "rounds": "2-3 prompts.",
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 5,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "None",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Open space.",
+    "how": "Group lines up by birthday month, height, shoe size etc without talking.",
+    "notes": "Best for larger groups, not 3-4 people."
+  },
+  {
+    "id": "marker-flip",
+    "title": "Marker Flip",
+    "section": "Teamwork & Laughter",
+    "duration": 5,
+    "rounds": "3 rounds x 45 seconds.",
+    "intensity": "moderate/high",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "30-40 flat discs/markers",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "Scatter markers, half up and half down, inside a marked area.",
+    "how": "One team turns markers one way; the other team turns them the other way. Count at the end of each round.",
+    "notes": "Simple, competitive and fun."
+  },
+  {
+    "id": "build-shape",
+    "title": "Build-a-Shape",
+    "section": "Teamwork & Laughter",
+    "duration": 6,
+    "rounds": "3 rounds x 90 seconds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Cones / discs",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "Build zone 5-8m from equipment pile.",
+    "how": "One piece at a time, participants build shapes such as arrow, house, boat, flower, clock or smiley face. Add movement variation by round.",
+    "notes": "Excellent DHG activity: teamwork, creativity and movement."
+  },
+  {
+    "id": "steal",
+    "title": "Steal",
+    "section": "Teamwork & Laughter",
+    "duration": 6,
+    "rounds": "1 game or 2 shorter games.",
+    "intensity": "moderate/high",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 4,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "20 discs + 4 cones",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "Central treasure pile and team bases.",
+    "how": "Teams collect from centre one at a time. Once a team has 3 treasures, they may steal from other teams. Last 30 seconds: everyone can steal.",
+    "notes": "Great finisher or mid-session game. Best with 4+."
+  },
+  {
+    "id": "partner-cone-transport",
+    "title": "Partner Cone Transport",
+    "section": "Teamwork & Laughter",
+    "duration": 5,
+    "rounds": "3 rounds x 60 seconds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 4,
+    "max": 99,
+    "requires_even": true,
+    "equipment": "5 discs/cones per team",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "Start zone with discs, empty zone 4-5m away.",
+    "how": "Pairs transport cones without hands. R1 forearms, R2 shoulders, R3 back-to-back. If dropped, return to start.",
+    "notes": "Only use with even numbers, or if coach joins in."
+  },
+  {
+    "id": "band-tug-base",
+    "title": "Band Tug Base",
+    "section": "Teamwork & Laughter",
+    "duration": 5,
+    "rounds": "3 rounds x 45-60 seconds.",
+    "intensity": "moderate/high",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 4,
+    "max": 99,
+    "requires_even": true,
+    "equipment": "Resistance bands + 5 cones each",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "Players start middle with cones at each base.",
+    "how": "Using band resistance, each player moves cones one by one to their base. First to place all cones wins.",
+    "notes": "Good competitive resistance game. Needs safe band control."
+  },
+  {
+    "id": "royal-relay",
+    "title": "Royal Relay",
+    "section": "Teamwork & Laughter",
+    "duration": 4,
+    "rounds": "3 rounds x 45 seconds.",
+    "intensity": "low/moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Wall ball + 6-10 cones",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "Cone weave route.",
+    "how": "Carry wall ball like a crown while navigating cones. R1 straight route, R2 royal wave, R3 pause and salute/bow/pose at each cone.",
+    "notes": "Better as cooperative procession if only one ball."
+  },
+  {
+    "id": "partner-pole-push",
+    "title": "Partner Pole Push",
+    "section": "Strength & Resistance",
+    "duration": 5,
+    "rounds": "3 rounds x 45-60 seconds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 4,
+    "max": 99,
+    "requires_even": true,
+    "equipment": "Mop handles / poles",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Pairs face each other holding pole horizontally.",
+    "how": "One pushes while the other resists with small controlled steps. Swap roles. Move A to B or around cones.",
+    "notes": "Controlled resistance, not a battle."
+  },
+  {
+    "id": "partner-pole-pull",
+    "title": "Partner Pole Pull",
+    "section": "Strength & Resistance",
+    "duration": 5,
+    "rounds": "3 rounds x 45-60 seconds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 4,
+    "max": 99,
+    "requires_even": true,
+    "equipment": "Mop handles / poles",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Pairs face each other holding pole.",
+    "how": "One pulls while the other resists and walks backward/forward under control. Swap roles.",
+    "notes": "Keep shoulders relaxed and smooth."
+  },
+  {
+    "id": "partner-band-rows",
+    "title": "Partner Band Rows & Presses",
+    "section": "Strength & Resistance",
+    "duration": 6,
+    "rounds": "3 rounds x 60 seconds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 4,
+    "max": 99,
+    "requires_even": true,
+    "equipment": "Resistance bands with handles",
+    "setup_time": "medium",
+    "fun": "medium",
+    "setup": "Pairs with band resistance set safely.",
+    "how": "Partners create resistance for rowing pulls and standing chest presses. Swap roles or alternate.",
+    "notes": "Good controlled strength section."
+  },
+  {
+    "id": "partner-band-rotations",
+    "title": "Partner Band Core Rotations",
+    "section": "Strength & Resistance",
+    "duration": 5,
+    "rounds": "2 rounds x 45 seconds each side/role.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 4,
+    "max": 99,
+    "requires_even": true,
+    "equipment": "Resistance bands",
+    "setup_time": "medium",
+    "fun": "medium",
+    "setup": "One partner anchors band, other rotates upper body away and back.",
+    "how": "Rotate controlled, roughly from 10-to to 10-past position. Swap roles.",
+    "notes": "Cue posture and smooth movement."
+  },
+  {
+    "id": "tug-band-walk",
+    "title": "Tug-of-War Band Walk",
+    "section": "Strength & Resistance",
+    "duration": 5,
+    "rounds": "3 rounds x 45 seconds.",
+    "intensity": "moderate/high",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 4,
+    "max": 99,
+    "requires_even": true,
+    "equipment": "Resistance band",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "Band around waists or held safely. Mark opposing directions.",
+    "how": "Partners walk in opposing directions while maintaining safe resistance.",
+    "notes": "Use carefully and avoid jerking."
+  },
+  {
+    "id": "partner-bungee",
+    "title": "Partner Bungee",
+    "section": "Strength & Resistance",
+    "duration": 5,
+    "rounds": "3 rounds x 45-60 seconds.",
+    "intensity": "moderate/high",
+    "locations": [
+      "outdoor"
+    ],
+    "min": 4,
+    "max": 99,
+    "requires_even": true,
+    "equipment": "Bungee/dip belt",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "One wears belt, partner holds handle; set a route.",
+    "how": "Pair moves around route while keeping tension. Swap roles.",
+    "notes": "Outdoor preferred. Needs space."
+  },
+  {
+    "id": "bungee-runs",
+    "title": "Bungee Runs",
+    "section": "Power & Conditioning",
+    "duration": 5,
+    "rounds": "3-4 rounds x 30-45 seconds.",
+    "intensity": "high",
+    "locations": [
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Bungee belt/handles",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "Line out and back; partner or coach anchors.",
+    "how": "Person runs to a line and back under resistance. Walking, sprinting or side-skip variations.",
+    "notes": "High energy. Use once and keep short."
+  },
+  {
+    "id": "bungee-grabs",
+    "title": "Bungee Grabs",
+    "section": "Power & Conditioning",
+    "duration": 5,
+    "rounds": "3 rounds x 45 seconds.",
+    "intensity": "high",
+    "locations": [
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Bungee belt + cones",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "Line of cones away from start.",
+    "how": "Runner collects cones one by one under resistance: first and back, second and back, etc.",
+    "notes": "Outdoor only or large hall. Use cautiously."
+  },
+  {
+    "id": "slam-overheads",
+    "title": "Slam Ball Overheads",
+    "section": "Power & Conditioning",
+    "duration": 5,
+    "rounds": "3 rounds x 45 seconds.",
+    "intensity": "high",
+    "locations": [
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Slam ball",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Open outdoor space.",
+    "how": "Squat down, pick up ball and throw backwards overhead. Run to it and repeat.",
+    "notes": "Use outdoors with clear space."
+  },
+  {
+    "id": "slam-slams",
+    "title": "Slam Ball Slams",
+    "section": "Power & Conditioning",
+    "duration": 4,
+    "rounds": "3 rounds x 30-40 seconds.",
+    "intensity": "high",
+    "locations": [
+      "outdoor",
+      "indoor"
+    ],
+    "min": 1,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Slam ball",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Safe surface/space.",
+    "how": "Raise ball overhead and slam down. Repeat for time.",
+    "notes": "Can be loud indoors. Short burst only."
+  },
+  {
+    "id": "weighted-ball-walks",
+    "title": "Weighted Ball Walks",
+    "section": "Power & Conditioning",
+    "duration": 5,
+    "rounds": "3 rounds x 60 seconds.",
+    "intensity": "moderate/high",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Weighted ball / slam ball",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Mark short carry route.",
+    "how": "Squat down, pick up ball, carry in front or on one shoulder around route.",
+    "notes": "Strength-conditioning without complex rules."
+  },
+  {
+    "id": "suitcase-carries",
+    "title": "Suitcase Carries",
+    "section": "Power & Conditioning",
+    "duration": 5,
+    "rounds": "3 rounds x 45-60 seconds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 1,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Weight plates or slam ball",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Short carry lane.",
+    "how": "Carry load one side like a suitcase; swap sides. Walk controlled route.",
+    "notes": "Useful practical strength."
+  },
+  {
+    "id": "weight-sledge",
+    "title": "Weight Plate Sledge",
+    "section": "Power & Conditioning",
+    "duration": 5,
+    "rounds": "3 rounds x 45-60 seconds.",
+    "intensity": "high",
+    "locations": [
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Plate, chain, dip belt",
+    "setup_time": "high",
+    "fun": "medium",
+    "setup": "Attach plate safely and mark distance.",
+    "how": "Walk to complete distance pulling the weight and return within time.",
+    "notes": "Outdoor preferred. Setup heavy."
+  },
+  {
+    "id": "wall-ball-hand-roll",
+    "title": "Wall Ball Hand Roll",
+    "section": "Lower Intensity / Reset",
+    "duration": 4,
+    "rounds": "2-3 rounds x 45 seconds.",
+    "intensity": "low/moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 1,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Wall ball/slam ball + cones",
+    "setup_time": "medium",
+    "fun": "medium",
+    "setup": "Cone route out and back.",
+    "how": "Push ball forwards around cone route using hands, then return.",
+    "notes": "Good reset between harder games."
+  },
+  {
+    "id": "slam-foot-roll",
+    "title": "Slam Ball Foot Roll",
+    "section": "Lower Intensity / Reset",
+    "duration": 4,
+    "rounds": "2-3 rounds x 45 seconds.",
+    "intensity": "low/moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 1,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Slam ball + cones",
+    "setup_time": "medium",
+    "fun": "medium",
+    "setup": "Cone route out and back.",
+    "how": "Push ball forwards around cone route using feet.",
+    "notes": "Coordination reset. Keep slow and controlled."
+  },
+  {
+    "id": "balance-coordination",
+    "title": "Balance & Coordination Challenge",
+    "section": "Lower Intensity / Reset",
+    "duration": 4,
+    "rounds": "3 rounds x 30-45 seconds.",
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 1,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Small cones/markers",
+    "setup_time": "medium",
+    "fun": "low",
+    "setup": "3-4 markers per person or group.",
+    "how": "One-leg cone touch, reach and recover, clock reaches. Use as reset, not main event.",
+    "notes": "Use rarely and only as a short recovery/control block."
+  },
+  {
+    "id": "ball-over-under",
+    "title": "Ball Over-Unders",
+    "section": "Team Movement",
+    "duration": 5,
+    "rounds": "2-3 rounds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Ball",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Group line facing same direction.",
+    "how": "Front person passes ball overhead, next under, alternating. Last person runs to front. Continue to finish line.",
+    "notes": "Works best 4+ but possible with 3."
+  },
+  {
+    "id": "ball-side-side",
+    "title": "Ball Side-to-Sides",
+    "section": "Team Movement",
+    "duration": 5,
+    "rounds": "2-3 rounds.",
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Ball",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Group line facing same direction.",
+    "how": "Pass ball sideways alternating left/right. Last person runs to front. Continue to finish line.",
+    "notes": "Good team coordination."
+  },
+  {
+    "id": "group-slam-carry",
+    "title": "Group Slam Ball Pick-Up Carries",
+    "section": "Team Movement",
+    "duration": 5,
+    "rounds": "Continuous timed relay.",
+    "intensity": "moderate/high",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Slam ball",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Two zones or one back-and-forth line.",
+    "how": "Front person picks up ball, carries to other zone, drops, returns. Next continues.",
+    "notes": "Adapt depending on numbers."
+  },
+  {
+    "id": "cool-down",
+    "title": "Cool Down & Reset",
+    "section": "Cool Down",
+    "duration": 5,
+    "rounds": "Gentle 5-minute finish.",
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 1,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "None",
+    "setup_time": "low",
+    "fun": "low",
+    "setup": "Loose circle or comfortable space.",
+    "how": "Slow breathing, shoulder/upper back release, calves, hips, hamstrings, side bends, gentle rotation.",
+    "notes": "End calm and positive."
+  },
+  {
+    "id": "mm-story-ball-mini",
+    "title": "Maintenance Minute: Story Ball Mini",
+    "section": "Maintenance Minute",
+    "duration": 1,
+    "rounds": "60-90 seconds",
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Small ball",
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Loose circle while coach sets up next activity.",
+    "how": "Keep the one-word story going while gently walking. No pressure; first word that comes to mind.",
+    "notes": "Great when you need 1-2 minutes."
+  },
+  {
+    "id": "mm-name-pass",
+    "title": "Maintenance Minute: Name Pass",
+    "section": "Maintenance Minute",
+    "duration": 1,
+    "rounds": "60 seconds",
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Small ball",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Loose circle.",
+    "how": "Call a name, pass the ball, receiver calls another name and passes. Keep feet moving gently.",
+    "notes": "Simple filler while setting cones/bands."
+  },
+  {
+    "id": "mm-walk-talk",
+    "title": "Maintenance Minute: Walk & Talk Question",
+    "section": "Maintenance Minute",
+    "duration": 1,
+    "rounds": "60-90 seconds",
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "None",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Group walks slowly around space.",
+    "how": "Give one easy prompt: favourite biscuit, holiday destination, worst vegetable, best takeaway. They walk and answer while you set up.",
+    "notes": "Good social reset."
+  },
+  {
+    "id": "mm-shoulder-pass",
+    "title": "Maintenance Minute: Shoulder Roll Pass",
+    "section": "Maintenance Minute",
+    "duration": 1,
+    "rounds": "60 seconds",
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 99,
+    "requires_even": false,
+    "equipment": "Small ball",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Loose circle.",
+    "how": "Before passing, receiver does two shoulder rolls or arm swings, then calls a name and passes.",
+    "notes": "Keeps them warm but calm."
+  }
+];
+let activities=loadActivities(),session=[],currentIndex=0,timerInterval=null,remaining=0;
+function loadActivities(){try{const s=localStorage.getItem('dhgActivities');return s?JSON.parse(s):DEFAULT_ACTIVITIES}catch(e){return DEFAULT_ACTIVITIES}}function saveActivities(){localStorage.setItem('dhgActivities',JSON.stringify(activities))}
+function normaliseLocation(loc){return loc==='both'?['indoor','outdoor']:[loc]}function fits(a,n,loc){return a.locations.includes(loc)&&n>=a.min&&n<=a.max&&!(a.requires_even&&n%2!==0)}function isHigh(a){return (a.intensity||'').includes('high')}
+function scoreActivity(a,loc,energy){let s=0;if(a.fun==='high')s+=4;if(a.setup_time==='low')s+=2;if(a.setup_time==='high')s-=2;if(a.locations.length===2)s+=1;if(energy==='lighter'&&isHigh(a))s-=6;if(energy==='higher'&&isHigh(a))s+=2;if(loc==='indoor'&&['marker-flip','build-shape','story-ball'].includes(a.id))s+=2;if(loc==='outdoor'&&['tail-tag','steal','bungee-runs'].includes(a.id))s+=2;return s}
+function choose(section,n,loc,used,energy,fallback=[]){let sections=[section,...fallback];let pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(energy==='lighter')pool=pool.filter(a=>!isHigh(a));if(!pool.length)pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(!pool.length)return null;pool.sort((a,b)=>scoreActivity(b,loc,energy)-scoreActivity(a,loc,energy));let max=Math.min(pool.length,4);let pick=pool[Math.floor(Math.random()*max)];used.add(pick.id);return pick}
+function maintenanceCard(n,loc){let pool=activities.filter(a=>a.section==='Maintenance Minute'&&fits(a,n,loc));return pool[Math.floor(Math.random()*pool.length)]||null}
+function buildSession(){const n=parseInt(document.getElementById('attendees').value,10),loc=document.getElementById('location').value,energy=document.getElementById('energy').value,used=new Set();let must=['breathing-reset','mobility-flow','light-bounce-footwork','story-ball'];let cards=must.map(id=>activities.find(a=>a.id===id)).filter(Boolean);must.forEach(id=>used.add(id));let plan=[['Light Reaction',[]],['Moderate Movement',['Brain & Movement']],['Teamwork & Laughter',['Brain & Movement']],['Lower Intensity / Reset',['Brain & Movement']],['Strength & Resistance',['Team Movement','Teamwork & Laughter']],['Teamwork & Laughter',['Brain & Movement']],['Power & Conditioning',['Moderate Movement','Team Movement']],['Cool Down',[]]];plan.forEach((p,i)=>{let pick=choose(p[0],n,loc,used,energy,p[1]);if(pick)cards.push(pick);if(i>0&&i<plan.length-1&&pick&&pick.setup_time!=='low'){let mm=maintenanceCard(n,loc);if(mm)cards.push({...mm,id:mm.id+'-'+i})}});let b1=choose('Teamwork & Laughter',n,loc,used,energy,['Light Reaction','Brain & Movement']);let b2=choose('Light Reaction',n,loc,used,energy,['Moderate Movement','Lower Intensity / Reset']);if(b1)cards.push({...b1,bonus:true});if(b2)cards.push({...b2,bonus:true});session=cards;currentIndex=0;document.getElementById('builder').classList.add('hidden');document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('sessionPanel').classList.remove('hidden');document.getElementById('sessionMeta').innerText=`${n} attending • ${loc} • 60 minutes • ${energy}`;renderCard()}
+function renderCard(){clearInterval(timerInterval);const a=session[currentIndex],panel=document.getElementById('activityCard');if(!a){panel.innerHTML='<h2>Session complete</h2><p>Good job. You reached the end.</p><button class="primary" onclick="resetToBuilder()">Build Another Session</button>';return}remaining=(a.duration||1)*60;let badges=[a.bonus?'<span class="badge orange">Bonus / optional</span>':'',`<span class="badge">${a.section}</span>`,`<span class="badge blue">${a.intensity}</span>`,`<span class="badge">${a.duration} mins</span>`].join('');panel.innerHTML=`<div class="section-title">Card ${currentIndex+1} of ${session.length}</div><div class="big-title">${esc(a.title)}</div><div>${badges}</div><div class="info-grid"><div class="info"><b>Equipment</b>${esc(a.equipment)}</div><div class="info"><b>Rounds / timing</b>${esc(a.rounds)}</div><div class="info"><b>Setup</b>${esc(a.setup)}</div><div class="info"><b>Coaching note</b>${esc(a.notes)}</div></div><h3>How to run</h3><p>${esc(a.how)}</p><div class="timer"><div><div class="muted small">Activity Timer</div><div id="time" class="time">${formatTime(remaining)}</div></div><div><button class="secondary" onclick="startTimer()">Start</button> <button class="secondary" onclick="pauseTimer()">Pause</button> <button class="secondary" onclick="resetTimer()">Reset</button></div></div><div class="nav-buttons"><button class="secondary" onclick="prevCard()">Back</button><button class="danger" onclick="skipCard()">Skip</button><button class="primary" onclick="nextCard()">Next</button></div><button class="ghost" onclick="replaceCard()">Replace this activity</button>`;updateProgress()}
+function updateProgress(){document.getElementById('progressBar').style.width=(session.length?(currentIndex/session.length)*100:0)+'%'}function nextCard(){currentIndex++;renderCard()}function prevCard(){if(currentIndex>0)currentIndex--;renderCard()}function skipCard(){nextCard()}
+function replaceCard(){let old=session[currentIndex],n=parseInt(document.getElementById('attendees').value,10),loc=document.getElementById('location').value,energy=document.getElementById('energy').value,used=new Set(session.map(a=>String(a.id).replace(/-\d+$/,'')));used.delete(String(old.id).replace(/-\d+$/,''));let repl=choose(old.section,n,loc,used,energy,['Brain & Movement','Teamwork & Laughter','Light Reaction','Moderate Movement','Lower Intensity / Reset']);if(repl){session[currentIndex]=repl;renderCard()}else alert('No suitable replacement found for this slot.')}
+function startTimer(){clearInterval(timerInterval);timerInterval=setInterval(()=>{remaining--;if(remaining<=0){remaining=0;clearInterval(timerInterval);if(navigator.vibrate)navigator.vibrate([200,80,200])}document.getElementById('time').innerText=formatTime(remaining)},1000)}function pauseTimer(){clearInterval(timerInterval)}function resetTimer(){remaining=(session[currentIndex].duration||1)*60;document.getElementById('time').innerText=formatTime(remaining)}function formatTime(s){let m=Math.floor(s/60),sec=s%60;return `${m}:${String(sec).padStart(2,'0')}`}
+function resetToBuilder(){clearInterval(timerInterval);document.getElementById('sessionPanel').classList.add('hidden');document.getElementById('builder').classList.remove('hidden')}function hidePanels(){document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('builder').classList.remove('hidden')}function showLibrary(){document.getElementById('builder').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('libraryPanel').classList.remove('hidden');renderLibrary()}function showAdd(){document.getElementById('builder').classList.add('hidden');document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.remove('hidden')}
+function renderLibrary(){let q=(document.getElementById('search').value||'').toLowerCase(),list=document.getElementById('libraryList');let rows=activities.filter(a=>!q||(a.title+a.section+a.equipment+a.how).toLowerCase().includes(q));rows.sort((a,b)=>a.section.localeCompare(b.section)||a.title.localeCompare(b.title));list.innerHTML=rows.map(a=>`<div class="list-item"><b>${esc(a.title)}</b><br><span class="badge">${a.section}</span><span class="badge">${a.duration} mins</span><span class="badge">${a.locations.join(', ')}</span><div class="small muted">${esc(a.how)}</div></div>`).join('')}
+function addActivity(){let title=document.getElementById('newTitle').value.trim();if(!title)return alert('Please add a title.');let locVal=document.getElementById('newLoc').value;let a={id:title.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now(),title,section:document.getElementById('newSection').value,duration:parseInt(document.getElementById('newDuration').value,10)||5,rounds:document.getElementById('newRounds').value,intensity:document.getElementById('newIntensity').value,locations:normaliseLocation(locVal),min:parseInt(document.getElementById('newMin').value,10)||1,max:99,requires_even:document.getElementById('newEven').value==='true',equipment:document.getElementById('newEquipment').value,setup_time:'medium',fun:document.getElementById('newFun').value,setup:document.getElementById('newSetup').value,how:document.getElementById('newHow').value,notes:document.getElementById('newNotes').value};activities.push(a);saveActivities();alert('Activity added.');showLibrary()}
+function exportData(){let blob=new Blob([JSON.stringify(activities,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='dhg-activity-library.json';a.click();URL.revokeObjectURL(url)}function importData(event){let file=event.target.files[0];if(!file)return;let reader=new FileReader();reader.onload=e=>{try{activities=JSON.parse(e.target.result);saveActivities();renderLibrary();alert('Imported.')}catch(err){alert('Could not import JSON.')}};reader.readAsText(file)}function resetLibrary(){if(confirm('Reset library to the built-in version? This removes activities you added on this device.')){activities=DEFAULT_ACTIVITIES;saveActivities();renderLibrary()}}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+</script></body></html>
