@@ -107,6 +107,9 @@ body.timer-alert::after{
 /* DHG v12 coaching clarity */
 .round-note{white-space:pre-line;line-height:1.35;font-size:.98rem}
 
+
+/* DHG v13 coaching clarity */
+.round-note{white-space:pre-line;line-height:1.35;font-size:.98rem}
 </style></head><body><header><div class="topbar"><div><h1>DHG Fitness Session Builder</h1><p class="header-sub">60-minute session runner</p></div><button class="header-checklist" onclick="openChecklist()">Checklist</button></div></header><main>
 <section id="builder" class="card"><h2>Build Session</h2><div class="row"><div class="field"><label>Number attending</label><select id="attendees"><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select></div><div class="field"><label>Location</label><select id="location"><option value="outdoor" selected>Outdoor</option><option value="indoor">Indoor / Hall</option></select></div><div class="field"><label>Energy</label><select id="energy"><option value="normal" selected>Normal</option><option value="lighter">Lighter</option><option value="higher">Higher</option></select></div></div><div class="row" style="margin-top:12px"><button class="primary" onclick="buildSession()">Build 60-min Session</button><button class="secondary" onclick="showLibrary()">Activity Library</button><button class="secondary" onclick="showAdd()">Add New Activity</button></div><p class="small muted">The generator adds bonus activities at the end. Use Skip if you do not need them.</p></section>
 <section id="sessionPanel" class="hidden"><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="section-title">Session Runner</div><div id="sessionMeta" class="muted small"></div></div><button class="ghost" onclick="resetToBuilder()">Change</button></div><div class="progress"><div id="progressBar"></div></div></div><div id="activityCard" class="card"></div></section>
@@ -268,7 +271,8 @@ const DEFAULT_ACTIVITIES = [
       "50 yellow marker discs"
     ],
     "rank": "occasional",
-    "auto_exclude": true
+    "auto_exclude": true,
+    "archived": true
   },
   {
     "id": "grab-cone-low",
@@ -563,7 +567,9 @@ const DEFAULT_ACTIVITIES = [
     "equipment_items": [
       "10 blue cones",
       "50 yellow marker discs"
-    ]
+    ],
+    "auto_exclude": true,
+    "archived": true
   },
   {
     "id": "steal",
@@ -593,7 +599,9 @@ const DEFAULT_ACTIVITIES = [
     "equipment_items": [
       "10 blue cones",
       "50 yellow marker discs"
-    ]
+    ],
+    "auto_exclude": true,
+    "archived": true
   },
   {
     "id": "partner-cone-transport",
@@ -622,7 +630,9 @@ const DEFAULT_ACTIVITIES = [
     "equipment_items": [
       "10 blue cones",
       "50 yellow marker discs"
-    ]
+    ],
+    "auto_exclude": true,
+    "archived": true
   },
   {
     "id": "band-tug-base",
@@ -685,7 +695,9 @@ const DEFAULT_ACTIVITIES = [
       "10 blue cones",
       "50 yellow marker discs",
       "1 wall ball: 10lb"
-    ]
+    ],
+    "auto_exclude": true,
+    "archived": true
   },
   {
     "id": "partner-pole-push",
@@ -1101,7 +1113,9 @@ const DEFAULT_ACTIVITIES = [
       "50 yellow marker discs",
       "Slam balls: 4kg + 7kg",
       "1 wall ball: 10lb"
-    ]
+    ],
+    "auto_exclude": true,
+    "archived": true
   },
   {
     "id": "slam-foot-roll",
@@ -1501,7 +1515,9 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Set a short route 5\u20138m out and back.",
     "how": "Keep it David-led so nobody has to invent moves. Use safe silly movement, not big jumps.",
-    "notes": "Movement and laughs without complicated rules."
+    "notes": "Movement and laughs without complicated rules.",
+    "auto_exclude": true,
+    "archived": true
   },
   {
     "id": "secret-agent-cones",
@@ -1561,7 +1577,9 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Loose walking area with a few cones around the edge.",
     "how": "A simple ball-passing movement game. David leads the rule changes each round.",
-    "notes": "Good replacement for command-heavy cone reaction games."
+    "notes": "Good replacement for command-heavy cone reaction games.",
+    "auto_exclude": true,
+    "archived": true
   },
   {
     "id": "marker-mayhem",
@@ -1570,9 +1588,9 @@ const DEFAULT_ACTIVITIES = [
     "duration": 6,
     "rounds": "3 rounds x 75 seconds",
     "round_details": [
-      "Round 1 \u2014 Collect Your Colour\nDo: Split markers into two zones. Teams collect as many discs as possible into their base.\nCoach: One disc at a time.",
-      "Round 2 \u2014 Swap the Base\nDo: Same game, but halfway through you call SWITCH BASES.\nCoach: They must move their pile to the new base.",
-      "Round 3 \u2014 Final Steal\nDo: For the final round, one steal is allowed each trip.\nCoach: Count discs at the end."
+      "Round 1 \u2014 Collect\nSetup: Two bases and markers in the middle.\nDo: Collect one marker at a time and place it in your base.\nCoach: Markers stay in bases.",
+      "Round 2 \u2014 Switch Bases\nSetup: Same setup.\nDo: When David calls SWITCH, teams change which base they belong to. The marker piles stay where they are.\nCoach: This means you may suddenly inherit the other team\u2019s score.",
+      "Round 3 \u2014 Golden Cone\nSetup: Add one blue cone in the middle worth 5 points.\nDo: A team can move the golden cone to their base, but only by walking.\nCoach: No stealing markers. Count final score."
     ],
     "intensity": "moderate",
     "locations": [
@@ -1591,7 +1609,283 @@ const DEFAULT_ACTIVITIES = [
     "fun": "high",
     "setup": "Scatter discs in the middle. Set two bases with cones.",
     "how": "A less exhausting alternative to Steal. Short runs, simple rules, lots of movement.",
-    "notes": "Use when you want laughter without making them too tired."
+    "notes": "Kept for manual use only because it overlaps with other marker games.",
+    "auto_exclude": true,
+    "archived": true
+  },
+  {
+    "id": "noughts-crosses-relay",
+    "title": "Noughts & Crosses Relay",
+    "section": "Brain & Movement",
+    "duration": 6,
+    "rounds": "3 rounds x 75 seconds",
+    "round_details": [
+      "Round 1 \u2014 Place the Pieces\nSetup: Make a 3x3 grid with yellow discs. Two teams use different marker sides or cones as pieces.\nDo: One person at a time places one piece, then returns and tags the next person.\nCoach: First team to make three in a row wins. Walking or light jogging only.",
+      "Round 2 \u2014 Move a Piece\nSetup: Keep the same 3x3 grid.\nDo: Once each team has 3 pieces down, they must move one of their existing pieces each turn.\nCoach: This becomes tactical and usually creates shouting/laughter.",
+      "Round 3 \u2014 Silent Team\nSetup: Same game.\nDo: Team can point but cannot speak while deciding where to place or move.\nCoach: If they speak, they do a dramatic silent mime and carry on."
+    ],
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "10 blue cones, 50 yellow marker discs",
+    "equipment_items": [
+      "10 blue cones",
+      "50 yellow marker discs"
+    ],
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Make a 3x3 grid using yellow marker discs.",
+    "how": "Use a simple relay format. One person moves at a time so everyone is watching, thinking and involved.",
+    "notes": "Good low-pressure tactics game. Works well with small groups.",
+    "theme": "tactics-grid"
+  },
+  {
+    "id": "river-crossing",
+    "title": "River Crossing",
+    "section": "Teamwork & Laughter",
+    "duration": 6,
+    "rounds": "3 rounds x 75 seconds",
+    "round_details": [
+      "Round 1 \u2014 Cross the River\nSetup: Lay yellow discs as stepping stones from start to finish.\nDo: They cross using only the discs. If a foot touches the river, step back one stone.\nCoach: Keep it light. This is balance and teamwork, not speed.",
+      "Round 2 \u2014 Fewer Stones\nSetup: Remove 1\u20132 discs.\nDo: They must work out how to cross with fewer stones.\nCoach: Allow talking and problem-solving.",
+      "Round 3 \u2014 Rescue the Ball\nSetup: Small ball starts at the first stone.\nDo: Team must get everyone and the ball across without dropping the ball or stepping in the river.\nCoach: If it drops, return the ball one stone, not all the way back."
+    ],
+    "intensity": "low/moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "50 yellow marker discs, 1 small lightweight rubber ball",
+    "equipment_items": [
+      "50 yellow marker discs",
+      "1 small lightweight rubber ball"
+    ],
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Create a short river crossing with discs spaced safely.",
+    "how": "Team crossing game using balance, planning and laughter.",
+    "notes": "Excellent for mixed abilities. Keep spacing safe and avoid big reaches.",
+    "theme": "team-balance"
+  },
+  {
+    "id": "cone-curling",
+    "title": "Cone Curling",
+    "section": "Lower Intensity / Reset",
+    "duration": 5,
+    "rounds": "3 rounds x 60 seconds",
+    "round_details": [
+      "Round 1 \u2014 Closest Wins\nSetup: Place one blue cone as the target.\nDo: Each person rolls the small ball towards the cone. Closest ball position wins.\nCoach: Mark the best spot with a yellow disc if needed.",
+      "Round 2 \u2014 Scoring Zones\nSetup: Create 3 scoring zones with discs: 1, 2 and 3 points.\nDo: Each person gets one roll per turn. Add team score.\nCoach: Roll gently. Accuracy beats power.",
+      "Round 3 \u2014 Team Total\nSetup: Same scoring zones.\nDo: Everyone gets one final roll. Add up the total as a group target.\nCoach: Give them a number to beat."
+    ],
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "10 blue cones, 50 yellow marker discs, 1 small lightweight rubber ball",
+    "equipment_items": [
+      "10 blue cones",
+      "50 yellow marker discs",
+      "1 small lightweight rubber ball"
+    ],
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Set a target cone and 2\u20133 scoring zones.",
+    "how": "Low-intensity target game to bring the energy down while keeping it fun.",
+    "notes": "Good downshift activity before final cool down.",
+    "theme": "target-game"
+  },
+  {
+    "id": "guard-the-castle",
+    "title": "Guard the Castle",
+    "section": "Teamwork & Laughter",
+    "duration": 6,
+    "rounds": "3 rounds x 75 seconds",
+    "round_details": [
+      "Round 1 \u2014 Knock the Castle\nSetup: Build a small castle of 4\u20136 blue cones.\nDo: One roller at a time rolls the small ball to knock cones over. Others retrieve/reset.\nCoach: Rotate jobs after each roll: roller, retriever, resetter, scorer.",
+      "Round 2 \u2014 Moving Defender\nSetup: Same castle.\nDo: One defender stands behind the castle and can reset ONE cone after each roll.\nCoach: Defender cannot block the ball, only reset after the roll.",
+      "Round 3 \u2014 Team Challenge\nSetup: Same castle.\nDo: How many cones can the group knock down and reset in 75 seconds?\nCoach: Everyone rotates quickly. Keep it lively."
+    ],
+    "intensity": "low/moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "10 blue cones, 1 small lightweight rubber ball",
+    "equipment_items": [
+      "10 blue cones",
+      "1 small lightweight rubber ball"
+    ],
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Build a small cone castle with a rolling line.",
+    "how": "Everyone has a role so nobody waits around.",
+    "notes": "Simple, funny and easy to coach.",
+    "theme": "target-game"
+  },
+  {
+    "id": "delivery-dash",
+    "title": "Delivery Dash",
+    "section": "Moderate Movement",
+    "duration": 6,
+    "rounds": "3 rounds x 75 seconds",
+    "round_details": [
+      "Round 1 \u2014 Simple Delivery\nSetup: Set a start zone and 3 delivery cones.\nDo: One marker at a time: collect from start, deliver to any cone, return.\nCoach: Steady pace. Everyone works at once if space allows.",
+      "Round 2 \u2014 Wrong Address\nSetup: Same setup.\nDo: When David calls WRONG ADDRESS, they must move their next delivery to a different cone.\nCoach: Markers already delivered stay where they are.",
+      "Round 3 \u2014 Delivery Order\nSetup: Number 3 delivery cones as 1, 2, 3.\nDo: David calls the order, e.g. 2-1-3. They deliver one marker to each in that order.\nCoach: This adds memory without making it complicated."
+    ],
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "10 blue cones, 50 yellow marker discs",
+    "equipment_items": [
+      "10 blue cones",
+      "50 yellow marker discs"
+    ],
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Start zone plus 3 delivery cones.",
+    "how": "Active delivery game without the chaos/exhaustion of Steal.",
+    "notes": "Good replacement for Steal. Keeps movement purposeful.",
+    "theme": "delivery"
+  },
+  {
+    "id": "cone-bingo",
+    "title": "Cone Bingo",
+    "section": "Brain & Movement",
+    "duration": 5,
+    "rounds": "3 rounds x 60 seconds",
+    "round_details": [
+      "Round 1 \u2014 Visit the Numbers\nSetup: Number cones 1\u20136.\nDo: David calls numbers. They move to that cone and back.\nCoach: Use walking, light jogging or side steps.",
+      "Round 2 \u2014 Team Bingo\nSetup: Same numbered cones.\nDo: As a team, they must visit all numbers 1\u20136 without repeating a number.\nCoach: They can talk and plan.",
+      "Round 3 \u2014 Avoid the Number\nSetup: Same cones.\nDo: David calls a banned number. They must choose and move to any OTHER cone.\nCoach: Quick decisions, no wrong answers unless they go to the banned cone."
+    ],
+    "intensity": "low/moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "10 blue cones, 50 yellow marker discs",
+    "equipment_items": [
+      "10 blue cones",
+      "50 yellow marker discs"
+    ],
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Set 6 numbered cones using marker discs.",
+    "how": "Brain movement game with simple rules and clear changes each round.",
+    "notes": "Good alternative to command-only reaction drills.",
+    "theme": "number-memory"
+  },
+  {
+    "id": "human-stopwatch",
+    "title": "Human Stopwatch",
+    "section": "Lower Intensity / Reset",
+    "duration": 4,
+    "rounds": "3 rounds x 45 seconds",
+    "round_details": [
+      "Round 1 \u2014 Guess 30 Seconds\nSetup: Everyone walks gently.\nDo: They stop when they think 30 seconds has passed.\nCoach: Reveal who was closest.",
+      "Round 2 \u2014 Team 45\nSetup: Everyone moves around.\nDo: They must agree as a group when 45 seconds has passed.\nCoach: They can talk, but no looking at watches.",
+      "Round 3 \u2014 Movement Clock\nSetup: Choose one movement: side step, march or walk.\nDo: They try to stop exactly at 60 seconds while doing that movement.\nCoach: Fun guessing game; not a fitness test."
+    ],
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "None",
+    "equipment_items": [],
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "No setup needed.",
+    "how": "Time-awareness game. Good reset and surprisingly funny.",
+    "notes": "Great low-intensity filler that still feels like a game.",
+    "theme": "time-game"
+  },
+  {
+    "id": "pass-the-parcel-movement",
+    "title": "Pass the Parcel Movement",
+    "section": "Mini Mission",
+    "duration": 1,
+    "rounds": "60 seconds",
+    "round_details": [
+      "60 seconds\nSetup: Everyone walking or standing in a loose circle.\nDo: Pass the ball while moving. When the timer buzzes, ball holder does the simple movement David calls: wave, march, toe taps or star pose.\nCoach: Keep it silly and easy. Then carry on setting up."
+    ],
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "1 small lightweight rubber ball",
+    "equipment_items": [
+      "1 small lightweight rubber ball"
+    ],
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Loose circle or walking space.",
+    "how": "One-minute led filler. Ball holder follows David\u2019s simple movement.",
+    "notes": "Mini Mission, not a full activity.",
+    "theme": "mini-ball"
+  },
+  {
+    "id": "crown-stack",
+    "title": "Crown Stack",
+    "section": "Teamwork & Laughter",
+    "duration": 5,
+    "rounds": "3 rounds x 60 seconds",
+    "round_details": [
+      "Round 1 \u2014 One Crown\nSetup: Each person balances one yellow disc on their head.\nDo: Walk to the target cone and place the disc on the crown stack.\nCoach: If it falls, pick it up, dramatic bow, continue.",
+      "Round 2 \u2014 Taller Crown\nSetup: Same route.\nDo: Try two discs on the head if safe. One disc is fine.\nCoach: No rushing. Funny balance is the point.",
+      "Round 3 \u2014 Royal Delivery\nSetup: Disc on head, small ball carried in hands.\nDo: Deliver the disc to the stack without dropping either item.\nCoach: Drop = dramatic bow and continue."
+    ],
+    "intensity": "low/moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "50 yellow marker discs, 1 small lightweight rubber ball",
+    "equipment_items": [
+      "50 yellow marker discs",
+      "1 small lightweight rubber ball"
+    ],
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Target cone/zone for stacking discs.",
+    "how": "Better replacement for Partner Cone Transport. Everyone works at the same time.",
+    "notes": "Fun, safe, visual and everyone is involved.",
+    "theme": "balance-carry"
   }
 ];
 let activities=loadActivities(),session=[],currentIndex=0,timerInterval=null,remaining=0;let audioCtx=null,audioUnlocked=false;function unlockAudio(){try{if(audioUnlocked)return;const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;audioCtx=new Ctx();if(audioCtx.state==="suspended")audioCtx.resume();audioUnlocked=true}catch(e){}}function playTone(freq,duration,start){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime+start;o.type="square";o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.18,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+duration);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+duration+0.03)}function playEndBuzzer(){try{if(!audioCtx)unlockAudio();if(!audioCtx)return;if(audioCtx.state==="suspended")audioCtx.resume();playTone(440,.18,0);playTone(330,.18,.22);playTone(440,.35,.44)}catch(e){}}function flashTimerDone(){document.body.classList.add("timer-alert");setTimeout(()=>document.body.classList.remove("timer-alert"),3000)}function timerDoneAlert(){playEndBuzzer();flashTimerDone();if(navigator.vibrate)navigator.vibrate([220,90,220,90,350])}
@@ -1613,7 +1907,19 @@ function migrateSavedActivities(){
 migrateSavedActivities();
 
 function normaliseLocation(loc){return loc==='both'?['indoor','outdoor']:[loc]}function fits(a,n,loc){return a.locations.includes(loc)&&n>=a.min&&n<=a.max&&!a.archived&&!a.auto_exclude&&(!a.requires_even||n%2===0)}function isHigh(a){return (a.intensity||'').includes('high')}
-function scoreActivity(a,loc,energy){let s=0;if(a.fun==='high')s+=4;if(a.setup_time==='low')s+=2;if(a.setup_time==='high')s-=2;if(a.locations.length===2)s+=1;if(energy==='lighter'&&isHigh(a))s-=6;if(energy==='higher'&&isHigh(a))s+=2;if(loc==='indoor'&&['marker-flip','build-shape','story-ball'].includes(a.id))s+=2;if(loc==='outdoor'&&['tail-tag','steal','bungee-runs'].includes(a.id))s+=2;return s}
+function scoreActivity(a,loc,energy){
+  let s=0;
+  if(a.fun==='high')s+=5;
+  if(a.setup_time==='low')s+=2;
+  if(a.setup_time==='high')s-=3;
+  if(a.locations.length===2)s+=1;
+  if(a.theme)s+=1;
+  if(energy==='lighter'&&isHigh(a))s-=7;
+  if(energy==='higher'&&isHigh(a))s+=2;
+  const fav=['noughts-crosses-relay','river-crossing','cone-curling','guard-the-castle','delivery-dash','cone-bingo','human-stopwatch','pass-the-parcel-movement','crown-stack','shuttle-memory','tail-tag','marker-flip'];
+  if(fav.includes(a.id))s+=4;
+  return s;
+}
 
 function plannedSeconds(a){
   return Math.round((Number(a.duration) || 1) * 60);
@@ -1661,7 +1967,25 @@ function addSessionBuffer(seconds){
   };
 }
 
-function choose(section,n,loc,used,energy,fallback=[]){let sections=[section,...fallback];let pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(energy==='lighter')pool=pool.filter(a=>!isHigh(a));if(!pool.length)pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(!pool.length)return null;pool.sort((a,b)=>scoreActivity(b,loc,energy)-scoreActivity(a,loc,energy));let max=Math.min(pool.length,4);let pick=pool[Math.floor(Math.random()*max)];used.add(pick.id);return pick}
+function choose(section,n,loc,used,energy,fallback=[]){
+  let sections=[section,...fallback];
+  let usedThemes = new Set(
+    Array.from(used).map(id=>{
+      const a=activities.find(x=>x.id===String(id).replace(/-\d+$/,''));
+      return a && a.theme;
+    }).filter(Boolean)
+  );
+  let pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id)&&!(a.theme&&usedThemes.has(a.theme)));
+  if(energy==='lighter')pool=pool.filter(a=>!isHigh(a));
+  if(!pool.length)pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));
+  if(!pool.length)return null;
+  pool.sort((a,b)=>scoreActivity(b,loc,energy)-scoreActivity(a,loc,energy));
+  let max=Math.min(pool.length,3);
+  let pick=pool[Math.floor(Math.random()*max)];
+  used.add(pick.id);
+  if(pick.theme)used.add('theme:'+pick.theme);
+  return pick;
+}
 function maintenanceCard(n,loc,used=new Set()){
   const hasStoryBall = used.has("story-ball");
   let pool = activities.filter(a =>
@@ -1755,17 +2079,16 @@ function buildSession(){
   let cards = must.map(id => activities.find(a => a.id === id)).filter(Boolean);
   must.forEach(id => used.add(id));
 
-  // DHG flow: calm start -> rhythm -> playful brain/movement -> teamwork -> strength/control -> short peak -> downshift -> cool down.
   const plan = [
     ['Brain & Movement',['Light Reaction']],
-    ['Moderate Movement',['Teamwork & Laughter']],
-    ['Mini Mission',[]],
     ['Teamwork & Laughter',['Brain & Movement']],
+    ['Mini Mission',[]],
+    ['Moderate Movement',['Teamwork & Laughter']],
     ['Strength & Resistance',['Teamwork & Laughter']],
     ['Mini Mission',[]],
     ['Teamwork & Laughter',['Brain & Movement']],
-    ['Power & Conditioning',['Moderate Movement']],
     ['Lower Intensity / Reset',['Brain & Movement']],
+    ['Power & Conditioning',['Moderate Movement','Teamwork & Laughter']],
     ['Cool Down',[]]
   ];
 
@@ -1780,7 +2103,7 @@ function buildSession(){
   let mainCards = fitSessionTo60(cards,n,loc,used,energy);
 
   let b1 = choose('Teamwork & Laughter',n,loc,used,energy,['Brain & Movement']);
-  let b2 = choose('Moderate Movement',n,loc,used,energy,['Mini Mission','Light Reaction']);
+  let b2 = choose('Lower Intensity / Reset',n,loc,used,energy,['Mini Mission','Light Reaction']);
   let bonusCards = [];
   if(b1) bonusCards.push({...b1,bonus:true});
   if(b2) bonusCards.push({...b2,bonus:true});
@@ -2234,7 +2557,7 @@ function formatTime(s){
 }
 
 function resetToBuilder(){clearInterval(timerInterval);document.getElementById('sessionPanel').classList.add('hidden');document.getElementById('builder').classList.remove('hidden')}function hidePanels(){document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('builder').classList.remove('hidden')}function showLibrary(){document.getElementById('builder').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('libraryPanel').classList.remove('hidden');renderLibrary()}function showAdd(){document.getElementById('builder').classList.add('hidden');document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.remove('hidden')}
-function renderLibrary(){let q=(document.getElementById('search').value||'').toLowerCase(),list=document.getElementById('libraryList');let rows=activities.filter(a=>!q||(a.title+a.section+a.equipment+a.how).toLowerCase().includes(q));rows.sort((a,b)=>a.section.localeCompare(b.section)||a.title.localeCompare(b.title));list.innerHTML=rows.map(a=>`<div class="list-item"><b>${esc(a.title)}</b><br><span class="badge">${a.section}</span><span class="badge">${a.duration} mins</span><span class="badge">${a.locations.join(', ')}</span><div class="small muted">${esc(a.how)}</div></div>`).join('')}
+function renderLibrary(){let q=(document.getElementById('search').value||'').toLowerCase(),list=document.getElementById('libraryList');let rows=activities.filter(a=>!q||(a.title+a.section+a.equipment+a.how).toLowerCase().includes(q));rows.sort((a,b)=>a.section.localeCompare(b.section)||a.title.localeCompare(b.title));list.innerHTML=rows.map(a=>`<div class="list-item"><b>${esc(displayTitle(a))}</b><br><span class="badge">${a.section}</span><span class="badge">${a.duration} mins</span><span class="badge">${a.locations.join(', ')}</span><div class="small muted">${esc(a.how)}</div></div>`).join('')}
 function addActivity(){let title=document.getElementById('newTitle').value.trim();if(!title)return alert('Please add a title.');let locVal=document.getElementById('newLoc').value;let a={id:title.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now(),title,section:document.getElementById('newSection').value,duration:parseInt(document.getElementById('newDuration').value,10)||5,rounds:document.getElementById('newRounds').value,
     round_details:(document.getElementById('newRoundDetails') ? document.getElementById('newRoundDetails').value : '').split('\n').map(x=>x.trim()).filter(Boolean),intensity:document.getElementById('newIntensity').value,locations:normaliseLocation(locVal),min:parseInt(document.getElementById('newMin').value,10)||1,max:99,requires_even:document.getElementById('newEven').value==='true',equipment:document.getElementById('newEquipment').value,setup_time:'medium',fun:document.getElementById('newFun').value,setup:document.getElementById('newSetup').value,how:document.getElementById('newHow').value,notes:document.getElementById('newNotes').value};activities.push(a);saveActivities();alert('Activity added.');showLibrary()}
 function exportData(){let blob=new Blob([JSON.stringify(activities,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='dhg-activity-library.json';a.click();URL.revokeObjectURL(url)}function importData(event){let file=event.target.files[0];if(!file)return;let reader=new FileReader();reader.onload=e=>{try{activities=JSON.parse(e.target.result);saveActivities();renderLibrary();alert('Imported.')}catch(err){alert('Could not import JSON.')}};reader.readAsText(file)}function resetLibrary(){if(confirm('Reset library to the built-in version? This removes activities you added on this device.')){activities=DEFAULT_ACTIVITIES;saveActivities();renderLibrary()}}
