@@ -110,6 +110,9 @@ body.timer-alert::after{
 
 /* DHG v13 coaching clarity */
 .round-note{white-space:pre-line;line-height:1.35;font-size:.98rem}
+
+/* DHG v14 coaching clarity */
+.round-note{white-space:pre-line;line-height:1.35;font-size:.98rem}
 </style></head><body><header><div class="topbar"><div><h1>DHG Fitness Session Builder</h1><p class="header-sub">60-minute session runner</p></div><button class="header-checklist" onclick="openChecklist()">Checklist</button></div></header><main>
 <section id="builder" class="card"><h2>Build Session</h2><div class="row"><div class="field"><label>Number attending</label><select id="attendees"><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select></div><div class="field"><label>Location</label><select id="location"><option value="outdoor" selected>Outdoor</option><option value="indoor">Indoor / Hall</option></select></div><div class="field"><label>Energy</label><select id="energy"><option value="normal" selected>Normal</option><option value="lighter">Lighter</option><option value="higher">Higher</option></select></div></div><div class="row" style="margin-top:12px"><button class="primary" onclick="buildSession()">Build 60-min Session</button><button class="secondary" onclick="showLibrary()">Activity Library</button><button class="secondary" onclick="showAdd()">Add New Activity</button></div><p class="small muted">The generator adds bonus activities at the end. Use Skip if you do not need them.</p></section>
 <section id="sessionPanel" class="hidden"><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="section-title">Session Runner</div><div id="sessionMeta" class="muted small"></div></div><button class="ghost" onclick="resetToBuilder()">Change</button></div><div class="progress"><div id="progressBar"></div></div></div><div id="activityCard" class="card"></div></section>
@@ -137,7 +140,10 @@ const DEFAULT_ACTIVITIES = [
     "setup": "Stand comfortably in a quiet space. Eyes closed only if safe.",
     "how": "Invite everyone to arrive, settle and switch off from the week. Run a calm 4-4-4 breathing pattern.",
     "notes": "Keep as the calm DHG signature start.",
-    "equipment_items": []
+    "equipment_items": [],
+    "auto_include": true,
+    "activity_uses": "None",
+    "theme": "breathing-reset"
   },
   {
     "id": "mobility-flow",
@@ -159,12 +165,15 @@ const DEFAULT_ACTIVITIES = [
     "setup": "Loose circle or facing coach.",
     "how": "Arm swings, shoulder rolls, rotations, side leans, squat and reach, ankle/knee/hip looseners.",
     "notes": "Change the theme slightly each week.",
-    "equipment_items": []
+    "equipment_items": [],
+    "auto_include": true,
+    "activity_uses": "None",
+    "theme": "mobility-flow"
   },
   {
     "id": "light-bounce-footwork",
     "title": "Footwork Flow",
-    "section": "Signature Start",
+    "section": "Warm Up",
     "duration": 4,
     "rounds": "4 minutes continuous flow",
     "intensity": "low/moderate",
@@ -178,1090 +187,14 @@ const DEFAULT_ACTIVITIES = [
     "equipment": "None",
     "setup_time": "low",
     "fun": "medium",
-    "setup": "Spread out safely.",
-    "how": "Lead the group through: side-to-side steps, left foot front/back, right foot front/back, quick steps on the spot, bouncing on the spot, walk around, side-step around, light skipping, then change direction on your call.",
-    "notes": "This is a warm-up flow, not a game. Keep it light, rhythmic and friendly.",
-    "equipment_items": []
-  },
-  {
-    "id": "story-ball",
-    "title": "Story Ball",
-    "section": "Warm-Up Game",
-    "duration": 5,
-    "rounds": "3 rounds x 60 seconds",
-    "intensity": "low/moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Small soft ball / light football",
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Loose circle or open space. Everyone moves gently as the ball is passed.",
-    "how": "Start the story with one simple word. They add one word each catch. Keep it moving and light.",
-    "notes": "Use early. It creates laughter without tiring them.",
-    "round_details": [
-      "Round 1 \u2014 Walking Story\nDo: Everyone walks gently. Pass the ball to someone by name.\nCoach: Catcher adds ONE word to the story, calls another name and passes.",
-      "Round 2 \u2014 Change Direction Story\nDo: Same story continues. After every pass, the whole group changes direction.\nCoach: Keep them walking and smiling. Do not worry if the story gets silly.",
-      "Round 3 \u2014 Freeze Frame Story\nDo: When the ball is caught, everyone freezes for 2 seconds like a dramatic scene.\nCoach: Catcher adds ONE word, calls a name, passes, then everyone moves again.\nTwist: If it gets ridiculous, that is the point."
-    ],
-    "equipment_items": [
-      "1 small lightweight rubber ball"
-    ]
-  },
-  {
-    "id": "hot-potato",
-    "title": "Warm-Up Hot Potato",
-    "section": "Warm-Up Game",
-    "duration": 4,
-    "rounds": "3 rounds x 45-60 seconds.",
-    "intensity": "low/moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Small rubber football",
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Loose circle, everyone moving gently.",
-    "how": "Keep moving while passing/catching. If the ball drops, reset quickly. Add light actions such as turn, reach, clap or gentle squat if suitable.",
-    "notes": "Good warm-up or maintenance filler.",
-    "round_details": [
-      "Round 1: Normal hot potato. Gentle movement, call a name, pass and catch.",
-      "Round 2: Name call before every pass. Keep feet moving and the ball moving.",
-      "Round 3: Slightly quicker passing. If dropped, pick it up, laugh and continue."
-    ],
-    "equipment_items": [
-      "1 small lightweight rubber ball"
-    ]
-  },
-  {
-    "id": "grab-cone-jog",
-    "title": "Grab the Cone - Jogging",
-    "section": "Light Reaction",
-    "duration": 4,
-    "rounds": "3 rounds x 45 seconds.",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "1 cone per pair/group",
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "People stand around a cone with space to move.",
-    "how": "Call shoulders, knees, toes, jump, turn, grab. They react to commands and only grab when called.",
-    "notes": "Paused from automatic sessions for now because the group has done this a few times.",
-    "round_details": [
-      "Round 1: Stationary around the cone. Call shoulders, knees, toes, jump, turn, grab.",
-      "Round 2: Walk or jog gently around the cone. Call body parts and direction changes before grab.",
-      "Round 3: Reaction round. Add clap, turn or hands behind back before calling grab."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "rank": "occasional",
-    "auto_exclude": true,
-    "archived": true
-  },
-  {
-    "id": "grab-cone-low",
-    "title": "Grab the Cone - Low Squat",
-    "section": "Light Reaction",
-    "duration": 4,
-    "rounds": "3 rounds x 40-45 seconds.",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "1 cone per pair/group",
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Same as cone grab, slightly lower stance.",
-    "how": "Use shoulders, knees, toes, grab. Offer higher stance option for knees.",
-    "notes": "Archived for current group: low squat position is not ideal with light knee issues.",
-    "round_details": [
-      "Round 1: Comfortable low stance. Call shoulders, knees, toes, then grab.",
-      "Round 2: Add jump or turn before grab, only if knees are comfortable.",
-      "Round 3: Final reaction round. Faster commands, still controlled."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "archived": true,
-    "auto_exclude": true
-  },
-  {
-    "id": "cone-reaction-sprint",
-    "title": "Cone Reaction Chaos",
-    "section": "Light Reaction",
-    "duration": 5,
-    "rounds": "3 rounds x 45 seconds",
-    "intensity": "moderate/high",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "5 cones in cross shape",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Centre cone with cones left/right/front/back.",
-    "how": "Set a cross or square of cones. Use silly cone names rather than just left/right/front/back. Keep it short and playful.",
-    "notes": "Archived from automatic sessions. Too much David calling single-word commands.",
-    "round_details": [
-      "Round 1: Give each cone a silly name: biscuit, beach, pirate, banana. Call the name; they react and return.",
-      "Round 2: Participant caller. One participant calls the cone names for 15\u201320 seconds, then swap.",
-      "Round 3: Wrong-way round. Call one cone and they go to the opposite cone if safe."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "auto_exclude": true,
-    "archived": true
-  },
-  {
-    "id": "tail-tag",
-    "title": "Tail Tag Transfer",
-    "section": "Moderate Movement",
-    "duration": 4,
-    "rounds": "4 rounds x 45 seconds",
-    "intensity": "high",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Bib/tail",
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Mark a safe playing area.",
-    "how": "If someone grabs the tail, they immediately wear it. The game continues without resetting.",
-    "notes": "Works well with 3\u20138. Keep the area small and safe.",
-    "round_details": [
-      "Round 1 \u2014 Normal Transfer\nDo: One tea towel tail. Whoever grabs it puts it on themselves and the game continues.\nCoach: Small safe area. Walking or light jogging only.",
-      "Round 2 \u2014 Ball Carry Tail\nDo: Tail holder also carries the small ball.\nCoach: Others try to steal the tail. New tail holder takes the ball too.",
-      "Round 3 \u2014 Safe Cone Rule\nDo: Add one safe cone. Tail holder can touch it for a 3-second breather, then must move again.\nCoach: Keep it funny, not frantic.",
-      "Round 4 \u2014 Final Chase\nDo: Normal tail transfer again, slightly smaller area.\nCoach: Stop while they are laughing, not exhausted."
-    ],
-    "equipment_items": [
-      "1 tea towel / bib tail"
-    ]
-  },
-  {
-    "id": "box-cone-running",
-    "title": "Box Cone Running",
-    "section": "Moderate Movement",
-    "duration": 5,
-    "rounds": "2-3 rounds x 60 seconds.",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "4-8 cones",
-    "setup_time": "medium",
-    "fun": "medium",
-    "setup": "Set cones in a box or zig-zag route.",
-    "how": "Run to first cone, side skip, run forward, side skip, then walk/backpedal to start.",
-    "notes": "Moderate movement without too much chaos.",
-    "round_details": [
-      "Round 1: Run forward and side-step around the box route.",
-      "Round 2: Repeat the route, smoother and slightly quicker.",
-      "Round 3: Optional final round: add backwards walk back to start."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ]
-  },
-  {
-    "id": "cone-circles",
-    "title": "Cone Circles",
-    "section": "Moderate Movement",
-    "duration": 4,
-    "rounds": "2-3 rounds x 45-60 seconds.",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Line of cones",
-    "setup_time": "medium",
-    "fun": "medium",
-    "setup": "Place cones in a straight or curved line.",
-    "how": "Run to cone, circle around backwards, move to next cone. Walk back to start.",
-    "notes": "Keep space clear and safe.",
-    "round_details": [
-      "Round 1: Move to each cone and circle backwards around it.",
-      "Round 2: Repeat with smoother turns and better control.",
-      "Round 3: Optional final round: slightly quicker, still safe."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ]
-  },
-  {
-    "id": "in-out-running",
-    "title": "In-and-Out Running",
-    "section": "Moderate Movement",
-    "duration": 4,
-    "rounds": "2-3 rounds x 45-60 seconds.",
-    "intensity": "moderate/high",
-    "locations": [
-      "outdoor",
-      "indoor"
-    ],
-    "min": 5,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Cones optional",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Participants line up with space between them.",
-    "how": "Person at back weaves in and out to the front; new back person continues.",
-    "notes": "Best with 5+ people. Not useful enough with 3\u20134.",
-    "round_details": [
-      "Round 1: Back person weaves to the front at steady pace.",
-      "Round 2: Repeat with a little more rhythm.",
-      "Round 3: Optional final round, short and sharp."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ]
-  },
-  {
-    "id": "shuttle-memory",
-    "title": "Shuttle Cone Memory Game",
-    "section": "Brain & Movement",
-    "duration": 6,
-    "rounds": "3 rounds x 75 seconds",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Numbered or coloured cones",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Place cones/markers in a line or small grid.",
-    "how": "Set four numbered cones. Build memory, movement and teamwork across the rounds.",
-    "notes": "Distinct rounds: individual memory, human code, silent team challenge.",
-    "round_details": [
-      "Round 1 \u2014 Touch the Code\nDo: Number 4 cones as 1, 2, 3, 4. Call a short code such as 1-3-2.\nCoach: They touch the cones in order and return.",
-      "Round 2 \u2014 Human Code\nDo: Each person becomes part of the code. Call 1-3-2-4 and they move to stand at those cone numbers in order.\nCoach: They must sort themselves into the code sequence.",
-      "Round 3 \u2014 Silent Team Code\nDo: Show or say the code once. They complete it as a team without talking.\nCoach: Allow pointing and laughing, but no words."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ]
-  },
-  {
-    "id": "silent-line-up",
-    "title": "Silent Line-Up",
-    "section": "Brain & Movement",
-    "duration": 4,
-    "rounds": "2-3 prompts.",
-    "intensity": "low",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 5,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "None",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Open space.",
-    "how": "Group lines up by birthday month, height, shoe size etc without talking.",
-    "notes": "Best for larger groups, not 3-4 people."
-  },
-  {
-    "id": "marker-flip",
-    "title": "Marker Flip Plus",
-    "section": "Teamwork & Laughter",
-    "duration": 5,
-    "rounds": "3 rounds x 60 seconds",
-    "intensity": "moderate/high",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "30-40 flat discs/markers",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Scatter markers, half up and half down, inside a marked area.",
-    "how": "Scatter yellow discs. Split into two teams. Keep rounds short and lively.",
-    "notes": "Upgraded so each round feels different.",
-    "round_details": [
-      "Round 1 \u2014 Classic Flip\nDo: Team A turns yellow discs face up. Team B turns them face down.\nCoach: Keep moving. No guarding discs.",
-      "Round 2 \u2014 Flip & Home\nDo: After every 3 flips, they must return to their home cone before flipping again.\nCoach: This adds movement and stops it becoming just bending over.",
-      "Round 3 \u2014 Treasure Flip\nDo: Yellow discs are 1 point. Blue cones are 3 points. They can flip discs OR move one cone to their base.\nCoach: Count points at the end."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ]
-  },
-  {
-    "id": "build-shape",
-    "title": "Build-a-Shape",
-    "section": "Teamwork & Laughter",
-    "duration": 6,
-    "rounds": "3 rounds x 90 seconds.",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Cones / discs",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Build zone 5-8m from equipment pile.",
-    "how": "One piece at a time, participants build shapes such as arrow, house, boat, flower, clock or smiley face. Add movement variation by round.",
-    "notes": "Excellent DHG activity: teamwork, creativity and movement.",
-    "round_details": [
-      "Round 1: Build an arrow or simple shape. Normal movement.",
-      "Round 2: Build a house. Side-step to collect, jog/walk back.",
-      "Round 3: Build a boat or funny shape. Three steps backwards / forwards or normal if space is tight."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "auto_exclude": true,
-    "archived": true
-  },
-  {
-    "id": "steal",
-    "title": "Steal",
-    "section": "Teamwork & Laughter",
-    "duration": 4,
-    "rounds": "3 rounds: 60 sec, 60 sec, 45 sec",
-    "intensity": "moderate/high",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 4,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "20 discs + 4 cones",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Central treasure pile and team bases.",
-    "how": "Teams collect from centre one at a time. Once a team has 3 treasures, they may steal from other teams. Last 30 seconds: everyone can steal.",
-    "notes": "Keep short. It gets tiring quickly, so use as a fun peak, not long conditioning.",
-    "round_details": [
-      "Round 1: Collect from the central pile only. One person at a time.",
-      "Round 2: Stealing begins once a team has 3 treasures.",
-      "Round 3: Final 45 seconds: everyone can steal. Count the score."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "auto_exclude": true,
-    "archived": true
-  },
-  {
-    "id": "partner-cone-transport",
-    "title": "Partner Cone Transport",
-    "section": "Teamwork & Laughter",
-    "duration": 4,
-    "rounds": "2 rounds x 75 seconds",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 4,
-    "max": 8,
-    "requires_even": true,
-    "equipment": "5 discs/cones per team",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Start zone with discs, empty zone 4-5m away.",
-    "how": "Pairs transport marker discs without using hands. Use only forearms and shoulders.",
-    "notes": "Back-to-back removed completely because it does not work well in reality.",
-    "round_details": [
-      "Round 1 \u2014 Forearm Carry\nDo: Pairs carry discs using forearms only. Deliver to the target zone.\nCoach: If it drops, return that disc to start.",
-      "Round 2 \u2014 Shoulder Carry\nDo: Pairs carry discs shoulder-to-shoulder.\nCoach: Slow and funny is fine. No back-to-back version."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "auto_exclude": true,
-    "archived": true
-  },
-  {
-    "id": "band-tug-base",
-    "title": "Band Tug Base",
-    "section": "Teamwork & Laughter",
-    "duration": 5,
-    "rounds": "3 rounds x 45-60 seconds.",
-    "intensity": "moderate/high",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 4,
-    "max": 8,
-    "requires_even": true,
-    "equipment": "Resistance bands + 5 cones each",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Players start middle with cones at each base.",
-    "how": "Using band resistance, each player moves cones one by one to their base. First to place all cones wins.",
-    "notes": "Good competitive resistance game. Needs safe band control.",
-    "round_details": [
-      "Round 1: Move cones one by one to your base under band resistance.",
-      "Round 2: Swap sides/roles and repeat.",
-      "Round 3: Final round. Smooth movement, no jerking."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs",
-      "Resistance tubes: yellow, green, orange, red, black",
-      "4 band handles"
-    ]
-  },
-  {
-    "id": "royal-relay",
-    "title": "Royal Procession",
-    "section": "Teamwork & Laughter",
-    "duration": 5,
-    "rounds": "3 rounds x 60 seconds",
-    "intensity": "low/moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Wall ball + 6-10 cones",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Cone weave route.",
-    "how": "Everyone is involved. The crown moves around the group as they travel around the route.",
-    "notes": "No one should just follow. Everyone gets a role.",
-    "round_details": [
-      "Round 1 \u2014 Crown Transfer\nDo: Everyone moves together around the cone route. The wall ball is the crown.\nCoach: At each cone, crown holder passes it to the next person.",
-      "Round 2 \u2014 Royal Pose\nDo: At each cone, David calls a pose: wave, bow, salute, freeze.\nCoach: Everyone copies the pose, then procession continues.",
-      "Round 3 \u2014 No Drop Challenge\nDo: Complete the route without dropping the crown.\nCoach: If it drops, everyone does a dramatic bow and carries on."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs",
-      "1 wall ball: 10lb"
-    ],
-    "auto_exclude": true,
-    "archived": true
-  },
-  {
-    "id": "partner-pole-push",
-    "title": "Partner Pole Push",
-    "section": "Strength & Resistance",
-    "duration": 5,
-    "rounds": "3 rounds x 45-60 seconds.",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 4,
-    "max": 8,
-    "requires_even": true,
-    "equipment": "Mop handles / poles",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Pairs face each other holding pole horizontally.",
-    "how": "One pushes while the other resists with small controlled steps. Swap roles. Move A to B or around cones.",
-    "notes": "Controlled resistance, not a battle.",
-    "round_details": [
-      "Round 1: Partner A pushes while Partner B resists. Move slowly from A to B.",
-      "Round 2: Swap roles.",
-      "Round 3: Slalom/control round around cones, still using gentle resistance."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs",
-      "2 broom handles / bars"
-    ]
-  },
-  {
-    "id": "partner-pole-pull",
-    "title": "Partner Pole Pull",
-    "section": "Strength & Resistance",
-    "duration": 5,
-    "rounds": "3 rounds x 45-60 seconds.",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 4,
-    "max": 8,
-    "requires_even": true,
-    "equipment": "Mop handles / poles",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Pairs face each other holding pole.",
-    "how": "One pulls while the other resists and walks backward/forward under control. Swap roles.",
-    "notes": "Keep shoulders relaxed and smooth.",
-    "round_details": [
-      "Round 1: Partner A pulls while Partner B resists and walks under control.",
-      "Round 2: Swap roles.",
-      "Round 3: Smooth final round, keeping tension without jerking."
-    ],
-    "equipment_items": [
-      "2 broom handles / bars"
-    ]
-  },
-  {
-    "id": "partner-band-rows",
-    "title": "Partner Band Rows & Presses",
-    "section": "Strength & Resistance",
-    "duration": 6,
-    "rounds": "3 rounds x 60 seconds.",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 4,
-    "max": 8,
-    "requires_even": true,
-    "equipment": "Resistance bands with handles",
-    "setup_time": "medium",
-    "fun": "medium",
-    "setup": "Pairs with band resistance set safely.",
-    "how": "Partners create resistance for rowing pulls and standing chest presses. Swap roles or alternate.",
-    "notes": "Good controlled strength section.",
-    "round_details": [
-      "Round 1: Partner rows. One works, one provides resistance.",
-      "Round 2: Standing chest presses. Swap/resist safely.",
-      "Round 3: Mix rows and presses or swap partners if suitable."
-    ],
-    "equipment_items": [
-      "Resistance tubes: yellow, green, orange, red, black",
-      "4 band handles"
-    ]
-  },
-  {
-    "id": "partner-band-rotations",
-    "title": "Partner Band Core Rotations",
-    "section": "Strength & Resistance",
-    "duration": 5,
-    "rounds": "2 rounds x 45 seconds each side/role.",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 4,
-    "max": 8,
-    "requires_even": true,
-    "equipment": "Resistance bands",
-    "setup_time": "medium",
-    "fun": "medium",
-    "setup": "One partner anchors band, other rotates upper body away and back.",
-    "how": "Rotate controlled, roughly from 10-to to 10-past position. Swap roles.",
-    "notes": "Cue posture and smooth movement.",
-    "round_details": [
-      "Round 1: Partner A rotates left/right under band resistance.",
-      "Round 2: Partner B rotates left/right under band resistance.",
-      "Round 3: Optional repeat or swap sides."
-    ],
-    "equipment_items": [
-      "Resistance tubes: yellow, green, orange, red, black",
-      "4 band handles"
-    ]
-  },
-  {
-    "id": "tug-band-walk",
-    "title": "Tug-of-War Band Walk",
-    "section": "Strength & Resistance",
-    "duration": 5,
-    "rounds": "3 rounds x 45 seconds.",
-    "intensity": "moderate/high",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 4,
-    "max": 8,
-    "requires_even": true,
-    "equipment": "Resistance band",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Band around waists or held safely. Mark opposing directions.",
-    "how": "Partners walk in opposing directions while maintaining safe resistance.",
-    "notes": "Use carefully and avoid jerking.",
-    "round_details": [
-      "Round 1: Walk apart under control, then return.",
-      "Round 2: Swap direction/side.",
-      "Round 3: Final controlled tug walk. No jerking."
-    ],
-    "equipment_items": [
-      "Resistance tubes: yellow, green, orange, red, black",
-      "4 band handles"
-    ]
-  },
-  {
-    "id": "partner-bungee",
-    "title": "Partner Bungee",
-    "section": "Strength & Resistance",
-    "duration": 5,
-    "rounds": "3 rounds x 45-60 seconds.",
-    "intensity": "moderate/high",
-    "locations": [
-      "outdoor"
-    ],
-    "min": 4,
-    "max": 8,
-    "requires_even": true,
-    "equipment": "Bungee/dip belt",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "One wears belt, partner holds handle; set a route.",
-    "how": "Pair moves around route while keeping tension. Swap roles.",
-    "notes": "Outdoor preferred. Needs space.",
-    "round_details": [
-      "Round 1: Partner A wears the belt and moves around the route.",
-      "Round 2: Partner B wears the belt and moves around the route.",
-      "Round 3: Final route or side-step variation if safe."
-    ],
-    "equipment_items": [
-      "1 bungee belt / dip belt"
-    ]
-  },
-  {
-    "id": "bungee-runs",
-    "title": "Bungee Runs",
-    "section": "Power & Conditioning",
-    "duration": 5,
-    "rounds": "3-4 rounds x 30-45 seconds.",
-    "intensity": "high",
-    "locations": [
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Bungee belt/handles",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Line out and back; partner or coach anchors.",
-    "how": "Person runs to a line and back under resistance. Walking, sprinting or side-skip variations.",
-    "notes": "High energy. Use once and keep short.",
-    "round_details": [
-      "Round 1: Walk or steady run to line and back under resistance.",
-      "Round 2: Slightly quicker run to line and back.",
-      "Round 3: Side-step or controlled sprint variation.",
-      "Round 4: Optional final short effort."
-    ],
-    "equipment_items": [
-      "1 bungee belt / dip belt",
-      "Resistance tubes: yellow, green, orange, red, black",
-      "4 band handles"
-    ]
-  },
-  {
-    "id": "bungee-grabs",
-    "title": "Bungee Grabs",
-    "section": "Power & Conditioning",
-    "duration": 5,
-    "rounds": "3 rounds x 45 seconds.",
-    "intensity": "high",
-    "locations": [
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Bungee belt + cones",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Line of cones away from start.",
-    "how": "Runner collects cones one by one under resistance: first and back, second and back, etc.",
-    "notes": "Outdoor only or large hall. Use cautiously.",
-    "round_details": [
-      "Round 1: Collect first cone and return.",
-      "Round 2: Collect second/third cones one at a time.",
-      "Round 3: Final cone collection challenge."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs",
-      "1 bungee belt / dip belt",
-      "Resistance tubes: yellow, green, orange, red, black",
-      "4 band handles"
-    ]
-  },
-  {
-    "id": "slam-overheads",
-    "title": "Slam Ball Overheads",
-    "section": "Power & Conditioning",
-    "duration": 5,
-    "rounds": "3 rounds x 45 seconds.",
-    "intensity": "high",
-    "locations": [
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Slam ball",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Open outdoor space.",
-    "how": "Squat down, pick up ball and throw backwards overhead. Run to it and repeat.",
-    "notes": "Use outdoors with clear space.",
-    "round_details": [
-      "Round 1: Overhead throw, jog to ball, repeat back.",
-      "Round 2: Repeat with smooth pick-up and safe spacing.",
-      "Round 3: Final short round, stop before form drops."
-    ],
-    "equipment_items": [
-      "Slam balls: 4kg + 7kg"
-    ]
-  },
-  {
-    "id": "slam-slams",
-    "title": "Slam Ball Power Pair",
-    "section": "Power & Conditioning",
-    "duration": 4,
-    "rounds": "3 rounds x 45 seconds",
-    "intensity": "high",
-    "locations": [
-      "outdoor",
-      "indoor"
-    ],
-    "min": 1,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Slam ball",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Safe surface/space.",
-    "how": "Use the 4kg and 7kg slam balls. Two people work, the others count, step and encourage, then swap.",
-    "notes": "Keeps everyone involved despite having only two slam balls.",
-    "round_details": [
-      "Round 1 \u2014 Slam & Count\nDo: Two people slam, others do easy step-touches and count clean slams.\nCoach: Swap after 20\u201325 seconds.",
-      "Round 2 \u2014 Slam & Carry\nDo: After 3 slams, carry the ball around one cone and return.\nCoach: Swap so everyone gets a go.",
-      "Round 3 \u2014 Team Total\nDo: 45-second team total. Two slam at a time, others count and cheer.\nCoach: Quality over speed. Stop before form gets messy."
-    ],
-    "equipment_items": [
-      "Slam balls: 4kg + 7kg"
-    ]
-  },
-  {
-    "id": "weighted-ball-walks",
-    "title": "Weighted Ball Walks",
-    "section": "Power & Conditioning",
-    "duration": 5,
-    "rounds": "3 rounds x 60 seconds.",
-    "intensity": "moderate/high",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Weighted ball / slam ball",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Mark short carry route.",
-    "how": "Squat down, pick up ball, carry in front or on one shoulder around route.",
-    "notes": "Strength-conditioning without complex rules.",
-    "round_details": [
-      "Round 1: Carry ball in front around route.",
-      "Round 2: Carry ball on shoulder if comfortable, then swap side.",
-      "Round 3: Final carry round, steady pace."
-    ],
-    "equipment_items": [
-      "Slam balls: 4kg + 7kg"
-    ]
-  },
-  {
-    "id": "suitcase-carries",
-    "title": "Suitcase Carries",
-    "section": "Power & Conditioning",
-    "duration": 5,
-    "rounds": "3 rounds x 45-60 seconds.",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 1,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Weight plates or slam ball",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Short carry lane.",
-    "how": "Carry load one side like a suitcase; swap sides. Walk controlled route.",
-    "notes": "Useful practical strength.",
-    "round_details": [
-      "Round 1: Suitcase carry on one side.",
-      "Round 2: Suitcase carry on the other side.",
-      "Round 3: Final carry round, choose side or swap halfway."
-    ],
-    "equipment_items": [
-      "Slam balls: 4kg + 7kg"
-    ]
-  },
-  {
-    "id": "weight-sledge",
-    "title": "Weight Plate Sledge",
-    "section": "Power & Conditioning",
-    "duration": 5,
-    "rounds": "3 rounds x 45-60 seconds.",
-    "intensity": "high",
-    "locations": [
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Plate, chain, dip belt",
-    "setup_time": "high",
-    "fun": "medium",
-    "setup": "Attach plate safely and mark distance.",
-    "how": "Walk to complete distance pulling the weight and return within time.",
-    "notes": "Outdoor preferred. Setup heavy.",
-    "round_details": [
-      "Round 1: Pull the weight over the set distance and back.",
-      "Round 2: Repeat, steady controlled pace.",
-      "Round 3: Final pull, stop before form drops."
-    ],
-    "equipment_items": [
-      "1 bungee belt / dip belt"
-    ]
-  },
-  {
-    "id": "wall-ball-hand-roll",
-    "title": "Wall Ball Hand Roll",
-    "section": "Lower Intensity / Reset",
-    "duration": 4,
-    "rounds": "2-3 rounds x 45 seconds.",
-    "intensity": "low/moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 1,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Wall ball/slam ball + cones",
-    "setup_time": "medium",
-    "fun": "medium",
-    "setup": "Cone route out and back.",
-    "how": "Push ball forwards around cone route using hands, then return.",
-    "notes": "Good reset between harder games.",
-    "round_details": [
-      "Round 1: Push ball around the cone route using hands.",
-      "Round 2: Repeat route, smoother turns.",
-      "Round 3: Optional final round, slightly quicker but controlled."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs",
-      "Slam balls: 4kg + 7kg",
-      "1 wall ball: 10lb"
-    ],
-    "auto_exclude": true,
-    "archived": true
-  },
-  {
-    "id": "slam-foot-roll",
-    "title": "Slam Ball Foot Roll",
-    "section": "Lower Intensity / Reset",
-    "duration": 4,
-    "rounds": "2-3 rounds x 45 seconds.",
-    "intensity": "low/moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 1,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Slam ball + cones",
-    "setup_time": "medium",
-    "fun": "medium",
-    "setup": "Cone route out and back.",
-    "how": "Push ball forwards around cone route using feet.",
-    "notes": "Archived: one person works while others wait, and it can be awkward/tough.",
-    "round_details": [
-      "Round 1: Push ball around route using feet.",
-      "Round 2: Repeat with more control.",
-      "Round 3: Optional final round or swap direction."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs",
-      "Slam balls: 4kg + 7kg"
-    ],
-    "archived": true,
-    "auto_exclude": true
-  },
-  {
-    "id": "balance-coordination",
-    "title": "Balance & Coordination Challenge",
-    "section": "Lower Intensity / Reset",
-    "duration": 4,
-    "rounds": "3 rounds x 30-45 seconds.",
-    "intensity": "low",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 1,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Small cones/markers",
-    "setup_time": "medium",
-    "fun": "low",
-    "setup": "3-4 markers per person or group.",
-    "how": "One-leg cone touch, reach and recover, clock reaches. Use as reset, not main event.",
-    "notes": "Archived for now: felt boring in practice.",
-    "round_details": [
-      "Round 1: One-leg cone touch: left, middle, right.",
-      "Round 2: Reach and recover with hand reach to markers.",
-      "Round 3: Clock reaches: tap called numbers and recover."
-    ],
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "archived": true,
-    "auto_exclude": true
-  },
-  {
-    "id": "ball-over-under",
-    "title": "Ball Over-Unders",
-    "section": "Team Movement",
-    "duration": 5,
-    "rounds": "2-3 rounds.",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Ball",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Group line facing same direction.",
-    "how": "Front person passes ball overhead, next under, alternating. Last person runs to front. Continue to finish line.",
-    "notes": "Works best 4+ but possible with 3.",
-    "round_details": [
-      "Round 1: Over-under pass down the line, last person moves to front.",
-      "Round 2: Repeat, smoother and slightly quicker.",
-      "Round 3: Optional final race to the finish line."
-    ]
-  },
-  {
-    "id": "ball-side-side",
-    "title": "Ball Side-to-Sides",
-    "section": "Team Movement",
-    "duration": 5,
-    "rounds": "2-3 rounds.",
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Ball",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Group line facing same direction.",
-    "how": "Pass ball sideways alternating left/right. Last person runs to front. Continue to finish line.",
-    "notes": "Good team coordination.",
-    "round_details": [
-      "Round 1: Side-to-side pass down the line, last person moves to front.",
-      "Round 2: Repeat in opposite direction or smoother rhythm.",
-      "Round 3: Optional final race to the finish line."
-    ]
-  },
-  {
-    "id": "group-slam-carry",
-    "title": "Group Slam Ball Pick-Up Carries",
-    "section": "Team Movement",
-    "duration": 5,
-    "rounds": "Continuous timed relay.",
-    "intensity": "moderate/high",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Slam ball",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Two zones or one back-and-forth line.",
-    "how": "Front person picks up ball, carries to other zone, drops, returns. Next continues.",
-    "notes": "Adapt depending on numbers.",
-    "round_details": [
-      "Round 1: Carry ball to other zone/team and return.",
-      "Round 2: Repeat, swap shoulder/side if suitable.",
-      "Round 3: Final carry round, steady but strong."
-    ],
-    "equipment_items": [
-      "Slam balls: 4kg + 7kg"
-    ]
+    "setup": "Open space with everyone facing David.",
+    "how": "Lead: side-to-sides, left foot front/back, right foot front/back, quick steps on spot, bounce on spot, walk around, side-step, light skipping, change direction.",
+    "notes": "Light rhythm warm-up, not a hard activity.",
+    "equipment_items": [],
+    "auto_include": true,
+    "activity_uses": "None",
+    "theme": "light-bounce-footwork",
+    "round_details": []
   },
   {
     "id": "cool-down",
@@ -1283,559 +216,21 @@ const DEFAULT_ACTIVITIES = [
     "setup": "Loose circle or comfortable space.",
     "how": "Slow breathing, shoulder/upper back release, calves, hips, hamstrings, side bends, gentle rotation.",
     "notes": "End calm and positive.",
-    "equipment_items": []
-  },
-  {
-    "id": "mm-story-ball-mini",
-    "title": "Story Pass",
-    "section": "Mini Mission",
-    "duration": 1,
-    "rounds": "60-90 seconds",
-    "intensity": "low",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Small ball",
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Loose circle while coach sets up next activity.",
-    "how": "Only use if Story Ball was not already used. Walk gently, pass, add one word.",
-    "notes": "Avoid repeating this when Story Ball started the session.",
-    "related_to": "story-ball",
-    "equipment_items": [
-      "1 small lightweight rubber ball"
-    ]
-  },
-  {
-    "id": "mm-name-pass",
-    "title": "Name Pass",
-    "section": "Mini Mission",
-    "duration": 1,
-    "rounds": "60 seconds",
-    "intensity": "low",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Small ball",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Loose circle.",
-    "how": "Everyone walks gently. Call a name and pass the ball. Catcher calls another name and passes.",
-    "notes": "Simple, led and useful between activities.",
-    "equipment_items": [
-      "1 small lightweight rubber ball"
-    ]
-  },
-  {
-    "id": "mm-walk-talk",
-    "title": "Category Pass",
-    "section": "Mini Mission",
-    "duration": 1,
-    "rounds": "60 seconds",
-    "intensity": "low",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "None",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Group walks slowly around space.",
-    "how": "David gives the category, such as food, holiday, animal or TV. Catcher gives one answer, calls a name and passes.",
-    "notes": "No walk-and-talk. This is quick, moving and playful."
-  },
-  {
-    "id": "mm-shoulder-pass",
-    "title": "Follow David's Feet",
-    "section": "Mini Mission",
-    "duration": 1,
-    "rounds": "60 seconds",
-    "intensity": "low",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Small ball",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Loose circle.",
-    "how": "David leads simple footwork: step-touch, march, side step, toe taps. Everyone follows while you prepare the next activity.",
-    "notes": "They do not need to think of their own moves.",
-    "equipment_items": [
-      "1 small lightweight rubber ball"
-    ]
-  },
-  {
-    "id": "mm-general-reset",
-    "title": "Maintenance Minute: Easy Name Pass / Reset",
-    "section": "Mini Mission",
-    "duration": 1,
-    "rounds": "60 seconds",
-    "intensity": "low",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Small ball optional",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Loose circle or gentle walking area.",
-    "how": "Keep people gently moving while you set up. Use easy name passing, walk-and-talk, shoulder rolls or light marching.",
-    "notes": "Use only as a short filler so nobody stands still while the next activity is prepared.",
-    "equipment_items": [
-      "1 small lightweight rubber ball"
-    ]
-  },
-  {
-    "id": "mm-would-you-rather",
-    "title": "Would You Rather Steps",
-    "section": "Mini Mission",
-    "duration": 1,
-    "rounds": "60 seconds",
-    "intensity": "low",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "None",
     "equipment_items": [],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Use two sides of the space.",
-    "how": "David asks simple choices: tea/coffee, beach/mountains, dog/cat. They step left or right to answer.",
-    "notes": "Fun, easy and fully David-led."
+    "auto_include": true,
+    "activity_uses": "None",
+    "theme": "cool-down"
   },
   {
-    "id": "category-corners",
-    "title": "Category Corners",
-    "section": "Brain & Movement",
-    "duration": 5,
-    "rounds": "3 rounds x 60 seconds",
-    "round_details": [
-      "Round 1 \u2014 Easy Corners\nDo: Four corners are simple categories: food, holiday, animal, sport.\nCoach: Call a category. They move there and shout one answer.",
-      "Round 2 \u2014 Odd One Out\nDo: Call a category, but one person must give an answer that does NOT fit.\nCoach: Let the group decide if it counts.",
-      "Round 3 \u2014 Quick Switch\nDo: Call categories faster. If someone repeats an answer, they do a funny wave and carry on.\nCoach: Keep it light. No pressure."
-    ],
-    "intensity": "low/moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "4 cones",
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Set four cones as corners. Give each corner a simple category.",
-    "how": "David leads. They only have to move and give simple answers.",
-    "notes": "Good new option instead of Grab the Cone."
-  },
-  {
-    "id": "cone-code-switch",
-    "title": "Cone Code Switch",
-    "section": "Light Reaction",
-    "duration": 5,
-    "rounds": "3 rounds x 45 seconds",
-    "round_details": [
-      "Round 1: Name each cone with a funny word: banana, pirate, biscuit, beach. Call the word and they move.",
-      "Round 2: Swap the cone names around so they have to remember the new code.",
-      "Round 3: Opposite rule. Call one cone and they move to the opposite cone."
-    ],
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "4 cones",
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Set 4 cones in a square or cross. Give each one a funny name.",
-    "how": "Call the cone names and have participants react. Change the code each round.",
-    "notes": "Archived from automatic sessions. Too command-heavy and too similar to other cone reaction games.",
-    "auto_exclude": true,
-    "archived": true
-  },
-  {
-    "id": "silly-walk-relay",
-    "title": "Silly Walk Relay",
-    "section": "Moderate Movement",
-    "duration": 5,
-    "rounds": "3 rounds x 60 seconds",
-    "round_details": [
-      "Round 1 \u2014 David Calls the Walk\nDo: David calls: giant steps, tiny steps, penguin walk, side shuffle.\nCoach: They move to the cone and back.",
-      "Round 2 \u2014 Switch on the Whistle\nDo: They start with normal walking. On your call of SWITCH, they change to the next silly walk.\nCoach: You lead the choices.",
-      "Round 3 \u2014 Memory Walk\nDo: Call a 3-move sequence: giant, tiny, side shuffle.\nCoach: They repeat the sequence out and back."
-    ],
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "2-4 cones",
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Set a short route 5\u20138m out and back.",
-    "how": "Keep it David-led so nobody has to invent moves. Use safe silly movement, not big jumps.",
-    "notes": "Movement and laughs without complicated rules.",
-    "auto_exclude": true,
-    "archived": true
-  },
-  {
-    "id": "secret-agent-cones",
-    "title": "Secret Agent Cones",
-    "section": "Teamwork & Laughter",
+    "id": "story-ball",
+    "title": "Story Ball",
+    "section": "Warm Up Game",
     "duration": 6,
-    "rounds": "3 rounds x 75 seconds",
+    "rounds": "3 rounds x 90 seconds",
     "round_details": [
-      "Round 1 \u2014 Agent Delivery\nDo: One Agent moves discs from start zone to target zone.\nCoach: Team gives clear directions: forward, left, right, stop.",
-      "Round 2 \u2014 Silent Agent\nDo: Team can only point and gesture. No talking.\nCoach: Agent still moves one item at a time.",
-      "Round 3 \u2014 Laser Field\nDo: Add 3 cones as lasers. Agent must go around them.\nCoach: If they touch a laser, everyone says 'beep beep' and they continue."
-    ],
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Cones and marker discs",
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Create a small start zone, target zone and a few cone obstacles.",
-    "how": "Rotate the Agent each round if time allows. Keep zones close enough so it moves quickly.",
-    "notes": "Teamwork and laughs without too much running."
-  },
-  {
-    "id": "ball-direction-change",
-    "title": "Ball Direction Change",
-    "section": "Light Reaction",
-    "duration": 5,
-    "rounds": "3 rounds x 60 seconds",
-    "round_details": [
-      "Round 1 \u2014 Pass & Turn\nDo: Walk freely. Pass the ball by calling a name.\nCoach: After each pass, everyone changes direction.",
-      "Round 2 \u2014 Pass & Move\nDo: Catcher must move to a cone before passing on.\nCoach: Everyone else keeps walking.",
-      "Round 3 \u2014 Two-Second Freeze\nDo: When the ball is caught, everyone freezes for 2 seconds.\nCoach: Then move again. Keep it silly and light."
-    ],
-    "intensity": "low/moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Small ball and cones",
-    "equipment_items": [
-      "1 small lightweight rubber ball",
-      "10 blue cones"
-    ],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Loose walking area with a few cones around the edge.",
-    "how": "A simple ball-passing movement game. David leads the rule changes each round.",
-    "notes": "Good replacement for command-heavy cone reaction games.",
-    "auto_exclude": true,
-    "archived": true
-  },
-  {
-    "id": "marker-mayhem",
-    "title": "Marker Mayhem",
-    "section": "Teamwork & Laughter",
-    "duration": 6,
-    "rounds": "3 rounds x 75 seconds",
-    "round_details": [
-      "Round 1 \u2014 Collect\nSetup: Two bases and markers in the middle.\nDo: Collect one marker at a time and place it in your base.\nCoach: Markers stay in bases.",
-      "Round 2 \u2014 Switch Bases\nSetup: Same setup.\nDo: When David calls SWITCH, teams change which base they belong to. The marker piles stay where they are.\nCoach: This means you may suddenly inherit the other team\u2019s score.",
-      "Round 3 \u2014 Golden Cone\nSetup: Add one blue cone in the middle worth 5 points.\nDo: A team can move the golden cone to their base, but only by walking.\nCoach: No stealing markers. Count final score."
-    ],
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "Marker discs and cones",
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Scatter discs in the middle. Set two bases with cones.",
-    "how": "A less exhausting alternative to Steal. Short runs, simple rules, lots of movement.",
-    "notes": "Kept for manual use only because it overlaps with other marker games.",
-    "auto_exclude": true,
-    "archived": true
-  },
-  {
-    "id": "noughts-crosses-relay",
-    "title": "Noughts & Crosses Relay",
-    "section": "Brain & Movement",
-    "duration": 6,
-    "rounds": "3 rounds x 75 seconds",
-    "round_details": [
-      "Round 1 \u2014 Place the Pieces\nSetup: Make a 3x3 grid with yellow discs. Two teams use different marker sides or cones as pieces.\nDo: One person at a time places one piece, then returns and tags the next person.\nCoach: First team to make three in a row wins. Walking or light jogging only.",
-      "Round 2 \u2014 Move a Piece\nSetup: Keep the same 3x3 grid.\nDo: Once each team has 3 pieces down, they must move one of their existing pieces each turn.\nCoach: This becomes tactical and usually creates shouting/laughter.",
-      "Round 3 \u2014 Silent Team\nSetup: Same game.\nDo: Team can point but cannot speak while deciding where to place or move.\nCoach: If they speak, they do a dramatic silent mime and carry on."
-    ],
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "10 blue cones, 50 yellow marker discs",
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Make a 3x3 grid using yellow marker discs.",
-    "how": "Use a simple relay format. One person moves at a time so everyone is watching, thinking and involved.",
-    "notes": "Good low-pressure tactics game. Works well with small groups.",
-    "theme": "tactics-grid"
-  },
-  {
-    "id": "river-crossing",
-    "title": "River Crossing",
-    "section": "Teamwork & Laughter",
-    "duration": 6,
-    "rounds": "3 rounds x 75 seconds",
-    "round_details": [
-      "Round 1 \u2014 Cross the River\nSetup: Lay yellow discs as stepping stones from start to finish.\nDo: They cross using only the discs. If a foot touches the river, step back one stone.\nCoach: Keep it light. This is balance and teamwork, not speed.",
-      "Round 2 \u2014 Fewer Stones\nSetup: Remove 1\u20132 discs.\nDo: They must work out how to cross with fewer stones.\nCoach: Allow talking and problem-solving.",
-      "Round 3 \u2014 Rescue the Ball\nSetup: Small ball starts at the first stone.\nDo: Team must get everyone and the ball across without dropping the ball or stepping in the river.\nCoach: If it drops, return the ball one stone, not all the way back."
-    ],
-    "intensity": "low/moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "50 yellow marker discs, 1 small lightweight rubber ball",
-    "equipment_items": [
-      "50 yellow marker discs",
-      "1 small lightweight rubber ball"
-    ],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Create a short river crossing with discs spaced safely.",
-    "how": "Team crossing game using balance, planning and laughter.",
-    "notes": "Excellent for mixed abilities. Keep spacing safe and avoid big reaches.",
-    "theme": "team-balance"
-  },
-  {
-    "id": "cone-curling",
-    "title": "Cone Curling",
-    "section": "Lower Intensity / Reset",
-    "duration": 5,
-    "rounds": "3 rounds x 60 seconds",
-    "round_details": [
-      "Round 1 \u2014 Closest Wins\nSetup: Place one blue cone as the target.\nDo: Each person rolls the small ball towards the cone. Closest ball position wins.\nCoach: Mark the best spot with a yellow disc if needed.",
-      "Round 2 \u2014 Scoring Zones\nSetup: Create 3 scoring zones with discs: 1, 2 and 3 points.\nDo: Each person gets one roll per turn. Add team score.\nCoach: Roll gently. Accuracy beats power.",
-      "Round 3 \u2014 Team Total\nSetup: Same scoring zones.\nDo: Everyone gets one final roll. Add up the total as a group target.\nCoach: Give them a number to beat."
-    ],
-    "intensity": "low",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "10 blue cones, 50 yellow marker discs, 1 small lightweight rubber ball",
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs",
-      "1 small lightweight rubber ball"
-    ],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Set a target cone and 2\u20133 scoring zones.",
-    "how": "Low-intensity target game to bring the energy down while keeping it fun.",
-    "notes": "Good downshift activity before final cool down.",
-    "theme": "target-game"
-  },
-  {
-    "id": "guard-the-castle",
-    "title": "Guard the Castle",
-    "section": "Teamwork & Laughter",
-    "duration": 6,
-    "rounds": "3 rounds x 75 seconds",
-    "round_details": [
-      "Round 1 \u2014 Knock the Castle\nSetup: Build a small castle of 4\u20136 blue cones.\nDo: One roller at a time rolls the small ball to knock cones over. Others retrieve/reset.\nCoach: Rotate jobs after each roll: roller, retriever, resetter, scorer.",
-      "Round 2 \u2014 Moving Defender\nSetup: Same castle.\nDo: One defender stands behind the castle and can reset ONE cone after each roll.\nCoach: Defender cannot block the ball, only reset after the roll.",
-      "Round 3 \u2014 Team Challenge\nSetup: Same castle.\nDo: How many cones can the group knock down and reset in 75 seconds?\nCoach: Everyone rotates quickly. Keep it lively."
-    ],
-    "intensity": "low/moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 3,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "10 blue cones, 1 small lightweight rubber ball",
-    "equipment_items": [
-      "10 blue cones",
-      "1 small lightweight rubber ball"
-    ],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Build a small cone castle with a rolling line.",
-    "how": "Everyone has a role so nobody waits around.",
-    "notes": "Simple, funny and easy to coach.",
-    "theme": "target-game"
-  },
-  {
-    "id": "delivery-dash",
-    "title": "Delivery Dash",
-    "section": "Moderate Movement",
-    "duration": 6,
-    "rounds": "3 rounds x 75 seconds",
-    "round_details": [
-      "Round 1 \u2014 Simple Delivery\nSetup: Set a start zone and 3 delivery cones.\nDo: One marker at a time: collect from start, deliver to any cone, return.\nCoach: Steady pace. Everyone works at once if space allows.",
-      "Round 2 \u2014 Wrong Address\nSetup: Same setup.\nDo: When David calls WRONG ADDRESS, they must move their next delivery to a different cone.\nCoach: Markers already delivered stay where they are.",
-      "Round 3 \u2014 Delivery Order\nSetup: Number 3 delivery cones as 1, 2, 3.\nDo: David calls the order, e.g. 2-1-3. They deliver one marker to each in that order.\nCoach: This adds memory without making it complicated."
-    ],
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "10 blue cones, 50 yellow marker discs",
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Start zone plus 3 delivery cones.",
-    "how": "Active delivery game without the chaos/exhaustion of Steal.",
-    "notes": "Good replacement for Steal. Keeps movement purposeful.",
-    "theme": "delivery"
-  },
-  {
-    "id": "cone-bingo",
-    "title": "Cone Bingo",
-    "section": "Brain & Movement",
-    "duration": 5,
-    "rounds": "3 rounds x 60 seconds",
-    "round_details": [
-      "Round 1 \u2014 Visit the Numbers\nSetup: Number cones 1\u20136.\nDo: David calls numbers. They move to that cone and back.\nCoach: Use walking, light jogging or side steps.",
-      "Round 2 \u2014 Team Bingo\nSetup: Same numbered cones.\nDo: As a team, they must visit all numbers 1\u20136 without repeating a number.\nCoach: They can talk and plan.",
-      "Round 3 \u2014 Avoid the Number\nSetup: Same cones.\nDo: David calls a banned number. They must choose and move to any OTHER cone.\nCoach: Quick decisions, no wrong answers unless they go to the banned cone."
-    ],
-    "intensity": "low/moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "10 blue cones, 50 yellow marker discs",
-    "equipment_items": [
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Set 6 numbered cones using marker discs.",
-    "how": "Brain movement game with simple rules and clear changes each round.",
-    "notes": "Good alternative to command-only reaction drills.",
-    "theme": "number-memory"
-  },
-  {
-    "id": "human-stopwatch",
-    "title": "Human Stopwatch",
-    "section": "Lower Intensity / Reset",
-    "duration": 4,
-    "rounds": "3 rounds x 45 seconds",
-    "round_details": [
-      "Round 1 \u2014 Guess 30 Seconds\nSetup: Everyone walks gently.\nDo: They stop when they think 30 seconds has passed.\nCoach: Reveal who was closest.",
-      "Round 2 \u2014 Team 45\nSetup: Everyone moves around.\nDo: They must agree as a group when 45 seconds has passed.\nCoach: They can talk, but no looking at watches.",
-      "Round 3 \u2014 Movement Clock\nSetup: Choose one movement: side step, march or walk.\nDo: They try to stop exactly at 60 seconds while doing that movement.\nCoach: Fun guessing game; not a fitness test."
-    ],
-    "intensity": "low",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "None",
-    "equipment_items": [],
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "No setup needed.",
-    "how": "Time-awareness game. Good reset and surprisingly funny.",
-    "notes": "Great low-intensity filler that still feels like a game.",
-    "theme": "time-game"
-  },
-  {
-    "id": "pass-the-parcel-movement",
-    "title": "Pass the Parcel Movement",
-    "section": "Mini Mission",
-    "duration": 1,
-    "rounds": "60 seconds",
-    "round_details": [
-      "60 seconds\nSetup: Everyone walking or standing in a loose circle.\nDo: Pass the ball while moving. When the timer buzzes, ball holder does the simple movement David calls: wave, march, toe taps or star pose.\nCoach: Keep it silly and easy. Then carry on setting up."
+      "Round 1 \u2014 One Word Story\nSetup: Loose walking circle. Small ball.\nDo: Catcher adds ONE word, calls a name, and passes.\nCoach: Start with one word such as cat, holiday or banana.",
+      "Round 2 \u2014 Emotion Story\nSetup: Same walking circle.\nDo: Before each pass, David calls a style: dramatic, posh, spooky, confused or excited. Catcher says their ONE word in that style.\nCoach: You choose the style. They do not invent it.",
+      "Round 3 \u2014 Sound Effect Story\nSetup: Same circle.\nDo: Catcher adds ONE word, then makes one quick sound effect or tiny gesture. Everyone copies once. Then pass on.\nCoach: Keep the sound/gesture quick. Laugh and move on."
     ],
     "intensity": "low",
     "locations": [
@@ -1849,23 +244,126 @@ const DEFAULT_ACTIVITIES = [
     "equipment_items": [
       "1 small lightweight rubber ball"
     ],
+    "activity_uses": "1 small lightweight rubber ball",
     "setup_time": "low",
     "fun": "high",
-    "setup": "Loose circle or walking space.",
-    "how": "One-minute led filler. Ball holder follows David\u2019s simple movement.",
-    "notes": "Mini Mission, not a full activity.",
-    "theme": "mini-ball"
+    "setup": "Loose walking circle.",
+    "how": "One-word group story with David-led twists.",
+    "notes": "Use early. Do not repeat as a mini mission.",
+    "theme": "story",
+    "auto_include": true
   },
   {
-    "id": "crown-stack",
-    "title": "Crown Stack",
+    "id": "marker-flip-plus",
+    "title": "Marker Flip Plus",
     "section": "Teamwork & Laughter",
     "duration": 5,
     "rounds": "3 rounds x 60 seconds",
     "round_details": [
-      "Round 1 \u2014 One Crown\nSetup: Each person balances one yellow disc on their head.\nDo: Walk to the target cone and place the disc on the crown stack.\nCoach: If it falls, pick it up, dramatic bow, continue.",
-      "Round 2 \u2014 Taller Crown\nSetup: Same route.\nDo: Try two discs on the head if safe. One disc is fine.\nCoach: No rushing. Funny balance is the point.",
-      "Round 3 \u2014 Royal Delivery\nSetup: Disc on head, small ball carried in hands.\nDo: Deliver the disc to the stack without dropping either item.\nCoach: Drop = dramatic bow and continue."
+      "Round 1 \u2014 Classic Flip\nSetup: Scatter about 20 yellow discs. Two teams: UP team and DOWN team.\nDo: UP turns discs face up. DOWN turns discs face down.\nCoach: Everyone moves at the same time. No guarding discs.",
+      "Round 2 \u2014 Switch Roles\nSetup: Same discs.\nDo: Start the same. When David calls SWITCH, UP team becomes DOWN team and DOWN becomes UP.\nCoach: Call SWITCH 2\u20133 times for funny mistakes.",
+      "Round 3 \u2014 Golden Disc\nSetup: Add one blue cone as the Golden Disc worth 5 points. Yellow discs are 1 point.\nDo: Teams flip discs as normal. Once per person, they may move the Golden Disc to their side/base.\nCoach: Count yellow points plus Golden Disc points."
+    ],
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "50 yellow marker discs, 10 blue cones",
+    "equipment_items": [
+      "50 yellow marker discs",
+      "10 blue cones"
+    ],
+    "activity_uses": "50 yellow marker discs, 10 blue cones",
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Scatter about 20 discs and mark two sides/bases.",
+    "how": "Fast, simple, everyone moving.",
+    "notes": "Good laughter game. Stop before it becomes just bending over.",
+    "theme": "marker-flip",
+    "auto_include": true
+  },
+  {
+    "id": "tail-tag-transfer",
+    "title": "Tail Tag Transfer",
+    "section": "Teamwork & Laughter",
+    "duration": 4,
+    "rounds": "4 rounds x 45 seconds",
+    "round_details": [
+      "Round 1 \u2014 Normal Transfer\nSetup: Small safe area. One tea towel tail tucked in.\nDo: Whoever grabs the tail puts it on themselves immediately. Game continues.\nCoach: Walking/light jogging only.",
+      "Round 2 \u2014 Smaller Area\nSetup: Bring cones in slightly.\nDo: Same rule: grab it, wear it, continue.\nCoach: Smaller area adds fun without extra speed.",
+      "Round 3 \u2014 Tail Holder Carries Ball\nSetup: Same area. Tail holder also carries small ball.\nDo: Grab the tail, then take the ball too. New tail holder carries both.\nCoach: Easier to spot, more fun.",
+      "Round 4 \u2014 Final 45\nSetup: Normal area again.\nDo: Fast final round: grab it, wear it, continue.\nCoach: Finish while laughing, not exhausted."
+    ],
+    "intensity": "moderate/high",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 3,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "1 tea towel / bib tail, 1 small lightweight rubber ball, 10 blue cones",
+    "equipment_items": [
+      "1 tea towel / bib tail",
+      "1 small lightweight rubber ball",
+      "10 blue cones"
+    ],
+    "activity_uses": "1 tea towel / bib tail, 1 small lightweight rubber ball, 10 blue cones",
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Use 4 cones to mark a small safe area.",
+    "how": "Continuous tail transfer, no resetting.",
+    "notes": "Good short peak.",
+    "theme": "chase",
+    "auto_include": true
+  },
+  {
+    "id": "shuttle-cone-memory",
+    "title": "Shuttle Cone Memory Game",
+    "section": "Brain & Movement",
+    "duration": 6,
+    "rounds": "3 rounds x 75 seconds",
+    "round_details": [
+      "Round 1 \u2014 Touch the Code\nSetup: Set 4 numbered cones.\nDo: David calls a short code, e.g. 1-3-2. They touch cones in order and return.\nCoach: Start easy with 3 numbers.",
+      "Round 2 \u2014 Human Code\nSetup: Same 4 cones.\nDo: Each person becomes part of the code. Call 1-3-2-4 and they arrange themselves at those cone numbers in order.\nCoach: They work as a team.",
+      "Round 3 \u2014 Build the Code\nSetup: Put a small pile of yellow discs at each cone and a finish line.\nDo: Call one code once, e.g. 2-4-1-3. Team collects ONE disc from each cone in that order and lays them in a line at the finish.\nCoach: The finish line must match the code order."
+    ],
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "10 blue cones, 50 yellow marker discs",
+    "equipment_items": [
+      "10 blue cones",
+      "50 yellow marker discs"
+    ],
+    "activity_uses": "10 blue cones, 50 yellow marker discs",
+    "setup_time": "low",
+    "fun": "high",
+    "setup": "Set 4 numbered cones; 3 discs by each cone for Round 3.",
+    "how": "Memory and movement: touch, become, build.",
+    "notes": "Distinct rounds, not repeated.",
+    "theme": "memory-code",
+    "auto_include": true
+  },
+  {
+    "id": "crown-stack-challenge",
+    "title": "Crown Stack Challenge",
+    "section": "Teamwork & Laughter",
+    "duration": 5,
+    "rounds": "3 rounds x 60 seconds",
+    "round_details": [
+      "Round 1 \u2014 One Crown\nSetup: Everyone has one yellow disc on head. Target cone 5\u20138m away.\nDo: Walk to target and add disc to the stack. Return and repeat if time.\nCoach: Drop = pick up, dramatic bow, continue.",
+      "Round 2 \u2014 Double Crown\nSetup: Everyone tries two discs on head. One is fine if needed.\nDo: Deliver to stack again.\nCoach: No rushing. Wobbles are the fun.",
+      "Round 3 \u2014 Royal Commands\nSetup: One or two discs on head.\nDo: While walking, David calls: wave, bow, turn, freeze. Do it without dropping the crown.\nCoach: Everyone moves at the same time."
     ],
     "intensity": "low/moderate",
     "locations": [
@@ -1875,51 +373,281 @@ const DEFAULT_ACTIVITIES = [
     "min": 2,
     "max": 8,
     "requires_even": false,
-    "equipment": "50 yellow marker discs, 1 small lightweight rubber ball",
+    "equipment": "50 yellow marker discs, 10 blue cones",
     "equipment_items": [
       "50 yellow marker discs",
-      "1 small lightweight rubber ball"
+      "10 blue cones"
     ],
+    "activity_uses": "50 yellow marker discs, 10 blue cones",
     "setup_time": "low",
     "fun": "high",
-    "setup": "Target cone/zone for stacking discs.",
-    "how": "Better replacement for Partner Cone Transport. Everyone works at the same time.",
-    "notes": "Fun, safe, visual and everyone is involved.",
-    "theme": "balance-carry"
+    "setup": "Give each person 1\u20132 discs. Set one target cone/stack.",
+    "how": "Balance and laughter. Everyone works at once.",
+    "notes": "Better than partner cone transport.",
+    "theme": "balance-carry",
+    "auto_include": true
+  },
+  {
+    "id": "river-crossing-simple",
+    "title": "River Crossing",
+    "section": "Teamwork & Laughter",
+    "duration": 6,
+    "rounds": "3 rounds x 75 seconds",
+    "round_details": [
+      "Round 1 \u2014 Cross on Stones\nSetup: Lay yellow discs as stepping stones with safe close spacing.\nDo: Cross using only discs. Step off = go back one stone.\nCoach: Balance, not speed.",
+      "Round 2 \u2014 Move the Stone\nSetup: Use fewer discs.\nDo: Team moves the back disc to the front to create the next step.\nCoach: Only move when balanced and safe.",
+      "Round 3 \u2014 Team Crossing\nSetup: Same fewer-stones setup.\nDo: Whole team must get across. They can pass discs forward and help each other plan.\nCoach: If stuck, David adds one rescue disc."
+    ],
+    "intensity": "low/moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "50 yellow marker discs",
+    "equipment_items": [
+      "50 yellow marker discs"
+    ],
+    "activity_uses": "50 yellow marker discs",
+    "setup_time": "medium",
+    "fun": "high",
+    "setup": "Create a short river with discs as stones.",
+    "how": "Team balance/problem-solving. Keep spacing safe.",
+    "notes": "Use for teamwork without impact.",
+    "theme": "team-balance",
+    "auto_include": true
+  },
+  {
+    "id": "cone-curling",
+    "title": "Cone Curling",
+    "section": "Lower Intensity / Reset",
+    "duration": 5,
+    "rounds": "3 rounds x 60 seconds",
+    "round_details": [
+      "Round 1 \u2014 Closest Roll\nSetup: One blue cone target. Rolling line 4\u20136m away.\nDo: Each person rolls the small ball once. Closest wins.\nCoach: Mark best roll with a disc.",
+      "Round 2 \u2014 Zone Points\nSetup: Add scoring zones with discs: 1, 2, 3 points.\nDo: Each person gets one roll. Add team score.\nCoach: Accuracy beats power.",
+      "Round 3 \u2014 Beat the Score\nSetup: Same zones.\nDo: Group gets one roll each to beat Round 2 total.\nCoach: Everyone cheers the final roll."
+    ],
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "1 small lightweight rubber ball, 10 blue cones, 50 yellow marker discs",
+    "equipment_items": [
+      "1 small lightweight rubber ball",
+      "10 blue cones",
+      "50 yellow marker discs"
+    ],
+    "activity_uses": "1 small lightweight rubber ball, 10 blue cones, 50 yellow marker discs",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Rolling line, target cone, scoring zones.",
+    "how": "Low-intensity target game/downshift.",
+    "notes": "Use after a harder activity.",
+    "theme": "target-game",
+    "auto_include": true
+  },
+  {
+    "id": "slam-ball-power-pair",
+    "title": "Slam Ball Power Pair",
+    "section": "Strength & Resistance",
+    "duration": 4,
+    "rounds": "3 rounds x 45 seconds",
+    "round_details": [
+      "Round 1 \u2014 Slam & Count\nSetup: Two slam balls out. Two people work; others step-touch and count.\nDo: Workers do safe slams. Swap after 20\u201325 seconds.\nCoach: Counters encourage and keep moving.",
+      "Round 2 \u2014 Slam & Carry\nSetup: Same pairs.\nDo: After 3 slams, carry ball around one cone and back. Continue.\nCoach: Swap halfway.",
+      "Round 3 \u2014 Team Total\nSetup: Same setup.\nDo: Team total for 45 seconds. Two slam at a time, others count loudly.\nCoach: Quality over speed."
+    ],
+    "intensity": "moderate/high",
+    "locations": [
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "Slam balls: 4kg + 7kg, 10 blue cones",
+    "equipment_items": [
+      "Slam balls: 4kg + 7kg",
+      "10 blue cones"
+    ],
+    "activity_uses": "Slam balls: 4kg + 7kg, 10 blue cones",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Two slam stations with safe spacing.",
+    "how": "Short power block; everyone works/counts/moves.",
+    "notes": "Outdoor only optional power block.",
+    "theme": "power-ball",
+    "auto_include": true
+  },
+  {
+    "id": "partner-pole-push",
+    "title": "Partner Pole Push",
+    "section": "Strength & Resistance",
+    "duration": 5,
+    "rounds": "2 rounds x 90 seconds",
+    "round_details": [
+      "Round 1 \u2014 Push & Resist\nSetup: Pairs hold broom handle between them at chest height.\nDo: A gently pushes while B gives controlled resistance for 20\u201330s, then swap.\nCoach: Small steps, strong posture, no jerking.",
+      "Round 2 \u2014 Push Walk\nSetup: Same pairs.\nDo: Pusher slowly walks partner backwards 3\u20134 steps, then returns. Swap roles.\nCoach: Smooth and safe."
+    ],
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "2 broom handles / bars",
+    "equipment_items": [
+      "2 broom handles / bars"
+    ],
+    "activity_uses": "2 broom handles / bars",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Pair people. David joins if odd number.",
+    "how": "Partner strength/control using broom handles.",
+    "notes": "Optional strength activity.",
+    "theme": "partner-strength",
+    "auto_include": true
+  },
+  {
+    "id": "partner-pole-pull",
+    "title": "Partner Pole Pull",
+    "section": "Strength & Resistance",
+    "duration": 5,
+    "rounds": "2 rounds x 90 seconds",
+    "round_details": [
+      "Round 1 \u2014 Pull & Resist\nSetup: Pairs hold broom handle between them.\nDo: A gently pulls while B resists for 20\u201330s, then swap.\nCoach: Shoulders down, smooth effort.",
+      "Round 2 \u2014 Row Walk\nSetup: Same pairs.\nDo: One partner does gentle rowing action while the other gives light resistance, then swap.\nCoach: No sharp pulling."
+    ],
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "2 broom handles / bars",
+    "equipment_items": [
+      "2 broom handles / bars"
+    ],
+    "activity_uses": "2 broom handles / bars",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Pair people. David joins if odd number.",
+    "how": "Partner pull/row strength.",
+    "notes": "Optional strength activity.",
+    "theme": "partner-strength",
+    "auto_include": true
+  },
+  {
+    "id": "category-pass-mini",
+    "title": "Category Pass",
+    "section": "Mini Mission",
+    "duration": 1,
+    "rounds": "60 seconds",
+    "round_details": [
+      "60 seconds\nSetup: Loose circle or walking space.\nDo: David gives a category such as food, holiday, animal or TV. Catcher gives ONE answer, calls a name and passes.\nCoach: Keep them walking gently. No repeats if possible, but do not make it stressful."
+    ],
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "1 small lightweight rubber ball",
+    "equipment_items": [
+      "1 small lightweight rubber ball"
+    ],
+    "activity_uses": "1 small lightweight rubber ball",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Loose circle.",
+    "how": "One-minute filler that is clearer than name passing.",
+    "notes": "Mini Mission only.",
+    "theme": "mini-category",
+    "auto_include": true
+  },
+  {
+    "id": "pass-parcel-mini",
+    "title": "Pass the Parcel Movement",
+    "section": "Mini Mission",
+    "duration": 1,
+    "rounds": "60 seconds",
+    "round_details": [
+      "60 seconds\nSetup: Loose circle or walking space.\nDo: Pass the ball while walking. When timer buzzes, ball holder does the simple movement David calls: wave, march, toe taps or royal bow.\nCoach: You choose the movement. They do not invent it."
+    ],
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "1 small lightweight rubber ball",
+    "equipment_items": [
+      "1 small lightweight rubber ball"
+    ],
+    "activity_uses": "1 small lightweight rubber ball",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Loose circle.",
+    "how": "Short led movement filler.",
+    "notes": "Mini Mission only.",
+    "theme": "mini-ball",
+    "auto_include": true
+  },
+  {
+    "id": "quick-balance-mini",
+    "title": "Quick Balance Challenge",
+    "section": "Mini Mission",
+    "duration": 1,
+    "rounds": "60 seconds",
+    "round_details": [
+      "60 seconds\nSetup: Each person has one yellow disc.\nDo: Balance the disc on head, shoulder or back of hand while walking slowly to a cone and back.\nCoach: If it drops, pick it up and continue. Keep it light."
+    ],
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "50 yellow marker discs, 10 blue cones",
+    "equipment_items": [
+      "50 yellow marker discs",
+      "10 blue cones"
+    ],
+    "activity_uses": "50 yellow marker discs, 10 blue cones",
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "One cone out and back.",
+    "how": "Quick led balance filler.",
+    "notes": "Mini Mission only.",
+    "theme": "mini-balance",
+    "auto_include": true
   }
 ];
 let activities=loadActivities(),session=[],currentIndex=0,timerInterval=null,remaining=0;let audioCtx=null,audioUnlocked=false;function unlockAudio(){try{if(audioUnlocked)return;const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;audioCtx=new Ctx();if(audioCtx.state==="suspended")audioCtx.resume();audioUnlocked=true}catch(e){}}function playTone(freq,duration,start){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime+start;o.type="square";o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.18,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+duration);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+duration+0.03)}function playEndBuzzer(){try{if(!audioCtx)unlockAudio();if(!audioCtx)return;if(audioCtx.state==="suspended")audioCtx.resume();playTone(440,.18,0);playTone(330,.18,.22);playTone(440,.35,.44)}catch(e){}}function flashTimerDone(){document.body.classList.add("timer-alert");setTimeout(()=>document.body.classList.remove("timer-alert"),3000)}function timerDoneAlert(){playEndBuzzer();flashTimerDone();if(navigator.vibrate)navigator.vibrate([220,90,220,90,350])}
 function loadActivities(){try{const s=localStorage.getItem('dhgActivities');return s?JSON.parse(s):DEFAULT_ACTIVITIES}catch(e){return DEFAULT_ACTIVITIES}}function saveActivities(){localStorage.setItem('dhgActivities',JSON.stringify(activities))}
 function migrateSavedActivities(){
-  try{
-    const defaultMap = new Map(DEFAULT_ACTIVITIES.map(a => [a.id, a]));
-    const seen = new Set();
-    const merged = activities.map(a => {
-      const d = defaultMap.get(a.id);
-      if(d){ seen.add(a.id); return {...d}; }
-      return a;
-    });
-    DEFAULT_ACTIVITIES.forEach(d => { if(!seen.has(d.id)) merged.push({...d}); });
-    activities = merged;
-    saveActivities();
-  }catch(e){}
+  try{ activities = DEFAULT_ACTIVITIES.map(a => ({...a})); saveActivities(); }catch(e){}
 }
 migrateSavedActivities();
 
-function normaliseLocation(loc){return loc==='both'?['indoor','outdoor']:[loc]}function fits(a,n,loc){return a.locations.includes(loc)&&n>=a.min&&n<=a.max&&!a.archived&&!a.auto_exclude&&(!a.requires_even||n%2===0)}function isHigh(a){return (a.intensity||'').includes('high')}
-function scoreActivity(a,loc,energy){
-  let s=0;
-  if(a.fun==='high')s+=5;
-  if(a.setup_time==='low')s+=2;
-  if(a.setup_time==='high')s-=3;
-  if(a.locations.length===2)s+=1;
-  if(a.theme)s+=1;
-  if(energy==='lighter'&&isHigh(a))s-=7;
-  if(energy==='higher'&&isHigh(a))s+=2;
-  const fav=['noughts-crosses-relay','river-crossing','cone-curling','guard-the-castle','delivery-dash','cone-bingo','human-stopwatch','pass-the-parcel-movement','crown-stack','shuttle-memory','tail-tag','marker-flip'];
-  if(fav.includes(a.id))s+=4;
-  return s;
-}
+function normaliseLocation(loc){return loc==='both'?['indoor','outdoor']:[loc]}function fits(a,n,loc){return a.locations.includes(loc)&&n>=a.min&&n<=a.max&&!a.archived&&!a.auto_exclude&&(a.auto_include!==false)&&(!a.requires_even||n%2===0)}function isHigh(a){return (a.intensity||'').includes('high')}
+function scoreActivity(a,loc,energy){let s=0;if(a.fun==='high')s+=5;if(a.fun==='medium')s+=2;if(a.setup_time==='low')s+=2;if(a.setup_time==='medium')s-=1;if(a.locations.length===2)s+=1;if(energy==='lighter'&&isHigh(a))s-=8;if(energy==='higher'&&isHigh(a))s+=2;return s;}
 
 function plannedSeconds(a){
   return Math.round((Number(a.duration) || 1) * 60);
@@ -1967,163 +695,12 @@ function addSessionBuffer(seconds){
   };
 }
 
-function choose(section,n,loc,used,energy,fallback=[]){
-  let sections=[section,...fallback];
-  let usedThemes = new Set(
-    Array.from(used).map(id=>{
-      const a=activities.find(x=>x.id===String(id).replace(/-\d+$/,''));
-      return a && a.theme;
-    }).filter(Boolean)
-  );
-  let pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id)&&!(a.theme&&usedThemes.has(a.theme)));
-  if(energy==='lighter')pool=pool.filter(a=>!isHigh(a));
-  if(!pool.length)pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));
-  if(!pool.length)return null;
-  pool.sort((a,b)=>scoreActivity(b,loc,energy)-scoreActivity(a,loc,energy));
-  let max=Math.min(pool.length,3);
-  let pick=pool[Math.floor(Math.random()*max)];
-  used.add(pick.id);
-  if(pick.theme)used.add('theme:'+pick.theme);
-  return pick;
-}
-function maintenanceCard(n,loc,used=new Set()){
-  const hasStoryBall = used.has("story-ball");
-  let pool = activities.filter(a =>
-    a.section === "Mini Mission" &&
-    fits(a,n,loc) &&
-    !used.has(a.id) &&
-    !(hasStoryBall && (a.related_to === "story-ball" || (a.title || "").toLowerCase().includes("story")))
-  );
-  if(!pool.length){
-    pool = activities.filter(a =>
-      a.section === "Mini Mission" &&
-      fits(a,n,loc) &&
-      !(hasStoryBall && (a.related_to === "story-ball" || (a.title || "").toLowerCase().includes("story")))
-    );
-  }
-  return pool[Math.floor(Math.random()*pool.length)] || null;
-}
+function choose(section,n,loc,used,energy,fallback=[]){let sections=[section,...fallback];let usedThemes=new Set(Array.from(used).map(id=>{const a=activities.find(x=>x.id===String(id).replace(/-\d+$/,''));return a&&a.theme;}).filter(Boolean));let pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id)&&!(a.theme&&usedThemes.has(a.theme)));if(energy==='lighter')pool=pool.filter(a=>!isHigh(a));if(!pool.length)pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(!pool.length)return null;pool.sort((a,b)=>scoreActivity(b,loc,energy)-scoreActivity(a,loc,energy));let pick=pool[Math.floor(Math.random()*Math.min(pool.length,3))];used.add(pick.id);return pick;}
+function maintenanceCard(n,loc,used=new Set()){let pool=activities.filter(a=>a.section==='Mini Mission'&&fits(a,n,loc)&&!used.has(a.id));if(!pool.length)pool=activities.filter(a=>a.section==='Mini Mission'&&fits(a,n,loc));return pool[Math.floor(Math.random()*pool.length)]||null;}
 
-function fitSessionTo60(cards,n,loc,used,energy){
-  const TARGET = 60 * 60;
-  let cool = cards.find(a => a.id === "cool-down");
-  let main = cards.filter(a => a.id !== "cool-down" && !a.bonus);
+function fitSessionTo60(cards,n,loc,used,energy){const TARGET=60*60;let cool=cards.find(a=>a.id==='cool-down');let main=cards.filter(a=>a.id!=='cool-down'&&!a.bonus);const fills=[['Mini Mission',[]],['Lower Intensity / Reset',['Brain & Movement']],['Teamwork & Laughter',['Brain & Movement']],['Strength & Resistance',['Lower Intensity / Reset']]];let safety=0;while(mainSessionSeconds([...main,cool].filter(Boolean))<TARGET-60&&safety<20){const remaining=TARGET-mainSessionSeconds([...main,cool].filter(Boolean));let pick=null;for(const pair of fills){const cand=pair[0]==='Mini Mission'?maintenanceCard(n,loc,used):choose(pair[0],n,loc,used,energy,pair[1]);if(cand&&plannedSeconds(cand)<=remaining){pick=cand;break;}if(cand)used.delete(cand.id);}if(pick)main.push(pick);else break;safety++;}let total=mainSessionSeconds([...main,cool].filter(Boolean));if(total<TARGET)main.push(addSessionBuffer(TARGET-total));return [...main,cool].filter(Boolean);}
 
-  const fillSections = [
-    ["Brain & Movement", ["Light Reaction"]],
-    ["Teamwork & Laughter", ["Brain & Movement"]],
-    ["Moderate Movement", ["Light Reaction"]],
-    ["Strength & Resistance", ["Teamwork & Laughter"]],
-    ["Lower Intensity / Reset", ["Brain & Movement"]]
-  ];
-
-  let safety = 0;
-  while(mainSessionSeconds([...main, cool].filter(Boolean)) < TARGET - 60 && safety < 20){
-    const remaining = TARGET - mainSessionSeconds([...main, cool].filter(Boolean));
-    let pick = null;
-
-    for(const pair of fillSections){
-      const candidate = choose(pair[0], n, loc, used, energy, pair[1]);
-      if(candidate && plannedSeconds(candidate) <= remaining){
-        pick = candidate;
-        break;
-      }
-      if(candidate) used.delete(candidate.id);
-    }
-
-    if(pick){
-      main.push(pick);
-      if(pick.setup_time !== "low"){
-        const mm = maintenanceCard(n,loc,used);
-        if(mm && plannedSeconds(mm) <= TARGET - mainSessionSeconds([...main, cool].filter(Boolean))){
-          main.push({...mm, id:mm.id + "-auto-" + safety});
-        }
-      }
-    }else{
-      break;
-    }
-    safety++;
-  }
-
-  let total = mainSessionSeconds([...main, cool].filter(Boolean));
-  if(total < TARGET){
-    const missing = TARGET - total;
-    main.push(addSessionBuffer(missing));
-  }
-
-  // If somehow over, remove maintenance cards from the end until not over.
-  safety = 0;
-  while(mainSessionSeconds([...main, cool].filter(Boolean)) > TARGET && safety < 20){
-    const idx = [...main].reverse().findIndex(a => a.section === "Mini Mission");
-    if(idx === -1) break;
-    const removeIndex = main.length - 1 - idx;
-    main.splice(removeIndex,1);
-    safety++;
-  }
-
-  total = mainSessionSeconds([...main, cool].filter(Boolean));
-  if(total < TARGET){
-    main.push(addSessionBuffer(TARGET - total));
-  }
-
-  return [...main, cool].filter(Boolean);
-}
-
-function buildSession(){
-  const n = parseInt(document.getElementById('attendees').value,10),
-        loc = document.getElementById('location').value,
-        energy = document.getElementById('energy').value,
-        used = new Set();
-
-  const must = ['breathing-reset','mobility-flow','light-bounce-footwork','story-ball'];
-  let cards = must.map(id => activities.find(a => a.id === id)).filter(Boolean);
-  must.forEach(id => used.add(id));
-
-  const plan = [
-    ['Brain & Movement',['Light Reaction']],
-    ['Teamwork & Laughter',['Brain & Movement']],
-    ['Mini Mission',[]],
-    ['Moderate Movement',['Teamwork & Laughter']],
-    ['Strength & Resistance',['Teamwork & Laughter']],
-    ['Mini Mission',[]],
-    ['Teamwork & Laughter',['Brain & Movement']],
-    ['Lower Intensity / Reset',['Brain & Movement']],
-    ['Power & Conditioning',['Moderate Movement','Teamwork & Laughter']],
-    ['Cool Down',[]]
-  ];
-
-  plan.forEach((p,i)=>{
-    let pick = (p[0] === 'Mini Mission') ? maintenanceCard(n,loc,used) : choose(p[0],n,loc,used,energy,p[1]);
-    if(pick){
-      cards.push(pick);
-      used.add(String(pick.id).replace(/-\d+$/,''));
-    }
-  });
-
-  let mainCards = fitSessionTo60(cards,n,loc,used,energy);
-
-  let b1 = choose('Teamwork & Laughter',n,loc,used,energy,['Brain & Movement']);
-  let b2 = choose('Lower Intensity / Reset',n,loc,used,energy,['Mini Mission','Light Reaction']);
-  let bonusCards = [];
-  if(b1) bonusCards.push({...b1,bonus:true});
-  if(b2) bonusCards.push({...b2,bonus:true});
-
-  let cool = mainCards.find(a => a.id === 'cool-down');
-  let withoutCool = mainCards.filter(a => a.id !== 'cool-down');
-
-  session = [...withoutCool, ...bonusCards, cool].filter(Boolean);
-  currentIndex = 0;
-
-  const bonusSeconds = bonusCards.reduce((sum,a)=>sum+plannedSeconds(a),0);
-  document.getElementById('builder').classList.add('hidden');
-  document.getElementById('libraryPanel').classList.add('hidden');
-  document.getElementById('addPanel').classList.add('hidden');
-  document.getElementById('sessionPanel').classList.remove('hidden');
-  document.getElementById('sessionMeta').innerText =
-    `${n} attending • ${loc} • 60-minute main session` + (bonusSeconds ? ` • bonus bank ${timeLabelFromSeconds(bonusSeconds)}` : '');
-
-  showEquipmentChecklist();
-}
+function buildSession(){const n=parseInt(document.getElementById('attendees').value,10),loc=document.getElementById('location').value,energy=document.getElementById('energy').value,used=new Set();const must=['breathing-reset','mobility-flow','light-bounce-footwork','story-ball'];let cards=must.map(id=>activities.find(a=>a.id===id)).filter(Boolean);must.forEach(id=>used.add(id));const plan=[['Teamwork & Laughter',['Brain & Movement']],['Brain & Movement',['Teamwork & Laughter']],['Mini Mission',[]],['Teamwork & Laughter',['Lower Intensity / Reset']],['Strength & Resistance',['Teamwork & Laughter']],['Mini Mission',[]],['Brain & Movement',['Lower Intensity / Reset']],['Lower Intensity / Reset',['Mini Mission']],['Teamwork & Laughter',['Strength & Resistance']],['Cool Down',[]]];plan.forEach(p=>{let pick=p[0]==='Mini Mission'?maintenanceCard(n,loc,used):choose(p[0],n,loc,used,energy,p[1]);if(pick){cards.push(pick);used.add(String(pick.id).replace(/-\d+$/,''));}});let mainCards=fitSessionTo60(cards,n,loc,used,energy);let b1=choose('Teamwork & Laughter',n,loc,used,energy,['Brain & Movement']);let b2=choose('Mini Mission',n,loc,used,energy,['Lower Intensity / Reset']);let bonusCards=[];if(b1)bonusCards.push({...b1,bonus:true});if(b2)bonusCards.push({...b2,bonus:true});let cool=mainCards.find(a=>a.id==='cool-down');let withoutCool=mainCards.filter(a=>a.id!=='cool-down');session=[...withoutCool,...bonusCards,cool].filter(Boolean);currentIndex=0;const bonusSeconds=bonusCards.reduce((sum,a)=>sum+plannedSeconds(a),0);document.getElementById('builder').classList.add('hidden');document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('sessionPanel').classList.remove('hidden');document.getElementById('sessionMeta').innerText=`${n} attending • ${loc} • 60-minute main session`+(bonusSeconds?` • bonus bank ${timeLabelFromSeconds(bonusSeconds)}`:'');showEquipmentChecklist();}
 
 /* DHG v3 alert system */
 let dhgAudioCtx = null;
