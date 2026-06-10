@@ -113,6 +113,9 @@ body.timer-alert::after{
 
 /* DHG v14 coaching clarity */
 .round-note{white-space:pre-line;line-height:1.35;font-size:.98rem}
+
+/* DHG v15 coaching clarity */
+.round-note{white-space:pre-line;line-height:1.35;font-size:.98rem}
 </style></head><body><header><div class="topbar"><div><h1>DHG Fitness Session Builder</h1><p class="header-sub">60-minute session runner</p></div><button class="header-checklist" onclick="openChecklist()">Checklist</button></div></header><main>
 <section id="builder" class="card"><h2>Build Session</h2><div class="row"><div class="field"><label>Number attending</label><select id="attendees"><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select></div><div class="field"><label>Location</label><select id="location"><option value="outdoor" selected>Outdoor</option><option value="indoor">Indoor / Hall</option></select></div><div class="field"><label>Energy</label><select id="energy"><option value="normal" selected>Normal</option><option value="lighter">Lighter</option><option value="higher">Higher</option></select></div></div><div class="row" style="margin-top:12px"><button class="primary" onclick="buildSession()">Build 60-min Session</button><button class="secondary" onclick="showLibrary()">Activity Library</button><button class="secondary" onclick="showAdd()">Add New Activity</button></div><p class="small muted">The generator adds bonus activities at the end. Use Skip if you do not need them.</p></section>
 <section id="sessionPanel" class="hidden"><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="section-title">Session Runner</div><div id="sessionMeta" class="muted small"></div></div><button class="ghost" onclick="resetToBuilder()">Change</button></div><div class="progress"><div id="progressBar"></div></div></div><div id="activityCard" class="card"></div></section>
@@ -123,9 +126,10 @@ const DEFAULT_ACTIVITIES = [
   {
     "id": "breathing-reset",
     "title": "Breathing Reset",
-    "section": "Signature Start",
-    "duration": 1,
-    "rounds": "3-4 rounds: in 4, hold 4, out 4.",
+    "section": "Warm Up",
+    "duration": 2,
+    "rounds": "2 minutes continuous",
+    "round_details": [],
     "intensity": "low",
     "locations": [
       "indoor",
@@ -135,22 +139,23 @@ const DEFAULT_ACTIVITIES = [
     "max": 8,
     "requires_even": false,
     "equipment": "None",
-    "setup_time": "low",
-    "fun": "low",
-    "setup": "Stand comfortably in a quiet space. Eyes closed only if safe.",
-    "how": "Invite everyone to arrive, settle and switch off from the week. Run a calm 4-4-4 breathing pattern.",
-    "notes": "Keep as the calm DHG signature start.",
-    "equipment_items": [],
-    "auto_include": true,
     "activity_uses": "None",
-    "theme": "breathing-reset"
+    "equipment_items": [],
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Loose standing circle.",
+    "how": "Eyes soft/closed if comfortable. Breathe in 4, hold 4, out 4. Repeat calmly.",
+    "notes": "Use this to start the session calmly.",
+    "theme": "warm-calm",
+    "auto_include": true
   },
   {
     "id": "mobility-flow",
     "title": "Mobility Flow",
-    "section": "Signature Start",
-    "duration": 3,
-    "rounds": "Continuous flow for 3 minutes.",
+    "section": "Warm Up",
+    "duration": 5,
+    "rounds": "5 minutes continuous",
+    "round_details": [],
     "intensity": "low",
     "locations": [
       "indoor",
@@ -160,22 +165,23 @@ const DEFAULT_ACTIVITIES = [
     "max": 8,
     "requires_even": false,
     "equipment": "None",
-    "setup_time": "low",
-    "fun": "low",
-    "setup": "Loose circle or facing coach.",
-    "how": "Arm swings, shoulder rolls, rotations, side leans, squat and reach, ankle/knee/hip looseners.",
-    "notes": "Change the theme slightly each week.",
-    "equipment_items": [],
-    "auto_include": true,
     "activity_uses": "None",
-    "theme": "mobility-flow"
+    "equipment_items": [],
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Open space.",
+    "how": "Lead gentle arm swings, shoulder rolls, upper-body rotations, side leans, squat/reach only if comfortable, ankle/knee/hip loosening.",
+    "notes": "Keep it gentle. Give knee-friendly options.",
+    "theme": "warm-mobility",
+    "auto_include": true
   },
   {
     "id": "light-bounce-footwork",
     "title": "Footwork Flow",
     "section": "Warm Up",
-    "duration": 4,
-    "rounds": "4 minutes continuous flow",
+    "duration": 5,
+    "rounds": "5 minutes continuous",
+    "round_details": [],
     "intensity": "low/moderate",
     "locations": [
       "indoor",
@@ -185,52 +191,26 @@ const DEFAULT_ACTIVITIES = [
     "max": 8,
     "requires_even": false,
     "equipment": "None",
+    "activity_uses": "None",
+    "equipment_items": [],
     "setup_time": "low",
     "fun": "medium",
-    "setup": "Open space with everyone facing David.",
-    "how": "Lead: side-to-sides, left foot front/back, right foot front/back, quick steps on spot, bounce on spot, walk around, side-step, light skipping, change direction.",
-    "notes": "Light rhythm warm-up, not a hard activity.",
-    "equipment_items": [],
-    "auto_include": true,
-    "activity_uses": "None",
-    "theme": "light-bounce-footwork",
-    "round_details": []
-  },
-  {
-    "id": "cool-down",
-    "title": "Cool Down & Reset",
-    "section": "Cool Down",
-    "duration": 5,
-    "rounds": "Gentle 5-minute finish.",
-    "intensity": "low",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 1,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "None",
-    "setup_time": "low",
-    "fun": "low",
-    "setup": "Loose circle or comfortable space.",
-    "how": "Slow breathing, shoulder/upper back release, calves, hips, hamstrings, side bends, gentle rotation.",
-    "notes": "End calm and positive.",
-    "equipment_items": [],
-    "auto_include": true,
-    "activity_uses": "None",
-    "theme": "cool-down"
+    "setup": "Open space with room to move.",
+    "how": "Lead: side-to-sides, left foot front/back, right foot front/back, quick steps on spot, bouncing on spot, walk around, side-step, light skipping, change direction on your call.",
+    "notes": "Light and rhythmic. Do not turn this into a hard drill.",
+    "theme": "warm-footwork",
+    "auto_include": true
   },
   {
     "id": "story-ball",
     "title": "Story Ball",
     "section": "Warm Up Game",
-    "duration": 6,
-    "rounds": "3 rounds x 90 seconds",
+    "duration": 8,
+    "rounds": "3 rounds x 2 minutes",
     "round_details": [
-      "Round 1 \u2014 One Word Story\nSetup: Loose walking circle. Small ball.\nDo: Catcher adds ONE word, calls a name, and passes.\nCoach: Start with one word such as cat, holiday or banana.",
-      "Round 2 \u2014 Emotion Story\nSetup: Same walking circle.\nDo: Before each pass, David calls a style: dramatic, posh, spooky, confused or excited. Catcher says their ONE word in that style.\nCoach: You choose the style. They do not invent it.",
-      "Round 3 \u2014 Sound Effect Story\nSetup: Same circle.\nDo: Catcher adds ONE word, then makes one quick sound effect or tiny gesture. Everyone copies once. Then pass on.\nCoach: Keep the sound/gesture quick. Laugh and move on."
+      "Round 1 \u2014 One Word Story\nSetup: Loose walking circle. Small ball.\nDo: Catcher adds ONE word, calls a name and passes.\nCoach: Start with one word such as 'cat', 'holiday' or 'banana'. Keep them walking gently.\nEnd: After 2 minutes or when the story has gone silly enough.",
+      "Round 2 \u2014 Luckily / Unfortunately\nSetup: Same walking circle.\nDo: Catcher adds a SHORT phrase starting with either 'Luckily...' or 'Unfortunately...'. Alternate between the two.\nCoach: Example: 'Luckily, the dog found a sandwich.' Next person: 'Unfortunately, it was moving.'\nEnd: After 2 minutes.",
+      "Round 3 \u2014 David's Twist\nSetup: Same circle.\nDo: Before the pass, David calls ONE twist: food, animal, holiday, disaster, romance, mystery or dramatic.\nCoach: Catcher adds a short phrase that includes that twist, then passes.\nEnd: After 2 minutes. Stop on a funny line if possible."
     ],
     "intensity": "low",
     "locations": [
@@ -241,15 +221,15 @@ const DEFAULT_ACTIVITIES = [
     "max": 8,
     "requires_even": false,
     "equipment": "1 small lightweight rubber ball",
+    "activity_uses": "1 small lightweight rubber ball",
     "equipment_items": [
       "1 small lightweight rubber ball"
     ],
-    "activity_uses": "1 small lightweight rubber ball",
     "setup_time": "low",
     "fun": "high",
     "setup": "Loose walking circle.",
-    "how": "One-word group story with David-led twists.",
-    "notes": "Use early. Do not repeat as a mini mission.",
+    "how": "A silly group story game. You lead the twists so they do not have to invent rules.",
+    "notes": "Use once at the start only. Do not repeat as a Mini Mission.",
     "theme": "story",
     "auto_include": true
   },
@@ -257,12 +237,12 @@ const DEFAULT_ACTIVITIES = [
     "id": "marker-flip-plus",
     "title": "Marker Flip Plus",
     "section": "Teamwork & Laughter",
-    "duration": 5,
-    "rounds": "3 rounds x 60 seconds",
+    "duration": 6,
+    "rounds": "3 rounds x 90 seconds",
     "round_details": [
-      "Round 1 \u2014 Classic Flip\nSetup: Scatter about 20 yellow discs. Two teams: UP team and DOWN team.\nDo: UP turns discs face up. DOWN turns discs face down.\nCoach: Everyone moves at the same time. No guarding discs.",
-      "Round 2 \u2014 Switch Roles\nSetup: Same discs.\nDo: Start the same. When David calls SWITCH, UP team becomes DOWN team and DOWN becomes UP.\nCoach: Call SWITCH 2\u20133 times for funny mistakes.",
-      "Round 3 \u2014 Golden Disc\nSetup: Add one blue cone as the Golden Disc worth 5 points. Yellow discs are 1 point.\nDo: Teams flip discs as normal. Once per person, they may move the Golden Disc to their side/base.\nCoach: Count yellow points plus Golden Disc points."
+      "Round 1 \u2014 Classic Flip\nSetup: Scatter about 20 yellow discs. Two teams: UP and DOWN.\nDo: UP team turns discs face up. DOWN team turns discs face down.\nCoach: Everyone moves at the same time. No guarding discs.\nEnd: Count after 90 seconds.",
+      "Round 2 \u2014 Switch Roles\nSetup: Same discs.\nDo: Start the same. When David calls SWITCH, UP team becomes DOWN team and DOWN becomes UP.\nCoach: Call SWITCH 2\u20133 times. This creates funny mistakes.\nEnd: Count after 90 seconds.",
+      "Round 3 \u2014 Golden Cone\nSetup: Add one blue cone in the middle. It is worth 5 points.\nDo: Teams flip discs as normal. Once per person, they may move the Golden Cone to their side/base.\nCoach: Yellow discs = 1 point. Golden Cone = 5 points.\nEnd: Count final score after 90 seconds."
     ],
     "intensity": "moderate",
     "locations": [
@@ -272,17 +252,17 @@ const DEFAULT_ACTIVITIES = [
     "min": 2,
     "max": 8,
     "requires_even": false,
-    "equipment": "50 yellow marker discs, 10 blue cones",
+    "equipment": "Approx. 20 yellow discs + 1 blue cone",
+    "activity_uses": "Approx. 20 yellow discs + 1 blue cone",
     "equipment_items": [
       "50 yellow marker discs",
       "10 blue cones"
     ],
-    "activity_uses": "50 yellow marker discs, 10 blue cones",
     "setup_time": "low",
     "fun": "high",
-    "setup": "Scatter about 20 discs and mark two sides/bases.",
-    "how": "Fast, simple, everyone moving.",
-    "notes": "Good laughter game. Stop before it becomes just bending over.",
+    "setup": "Scatter 20 discs. Mark two bases/sides with cones.",
+    "how": "Fast, simple, everyone moving. The rules change clearly each round.",
+    "notes": "Good early main game. Stop before it becomes just bending over.",
     "theme": "marker-flip",
     "auto_include": true
   },
@@ -290,13 +270,13 @@ const DEFAULT_ACTIVITIES = [
     "id": "tail-tag-transfer",
     "title": "Tail Tag Transfer",
     "section": "Teamwork & Laughter",
-    "duration": 4,
-    "rounds": "4 rounds x 45 seconds",
+    "duration": 5,
+    "rounds": "4 rounds x 60 seconds",
     "round_details": [
-      "Round 1 \u2014 Normal Transfer\nSetup: Small safe area. One tea towel tail tucked in.\nDo: Whoever grabs the tail puts it on themselves immediately. Game continues.\nCoach: Walking/light jogging only.",
-      "Round 2 \u2014 Smaller Area\nSetup: Bring cones in slightly.\nDo: Same rule: grab it, wear it, continue.\nCoach: Smaller area adds fun without extra speed.",
-      "Round 3 \u2014 Tail Holder Carries Ball\nSetup: Same area. Tail holder also carries small ball.\nDo: Grab the tail, then take the ball too. New tail holder carries both.\nCoach: Easier to spot, more fun.",
-      "Round 4 \u2014 Final 45\nSetup: Normal area again.\nDo: Fast final round: grab it, wear it, continue.\nCoach: Finish while laughing, not exhausted."
+      "Round 1 \u2014 Normal Transfer\nSetup: Small safe area marked by 4 cones. One tea towel tail.\nDo: Whoever grabs the tail puts it on themselves immediately. Game continues.\nCoach: Walking or light jogging only. Keep the area small.\nEnd: Stop after 60 seconds.",
+      "Round 2 \u2014 Smaller Area\nSetup: Bring the cones in slightly.\nDo: Same rule: grab it, wear it, continue.\nCoach: Smaller area makes it fun without needing more speed.\nEnd: Stop after 60 seconds.",
+      "Round 3 \u2014 Tail Holder Carries Ball\nSetup: Same small area. Tail holder also carries the small ball.\nDo: Grab the tail, then take the ball too. New tail holder carries both.\nCoach: This makes the tail holder easier to spot and adds fun.\nEnd: Stop after 60 seconds.",
+      "Round 4 \u2014 Final Chase\nSetup: Normal area again.\nDo: Fast final round: grab it, wear it, continue.\nCoach: Finish while they are laughing, not exhausted.\nEnd: Stop after 60 seconds."
     ],
     "intensity": "moderate/high",
     "locations": [
@@ -306,18 +286,18 @@ const DEFAULT_ACTIVITIES = [
     "min": 3,
     "max": 8,
     "requires_even": false,
-    "equipment": "1 tea towel / bib tail, 1 small lightweight rubber ball, 10 blue cones",
+    "equipment": "1 tea towel/bib tail + small ball + 4 cones",
+    "activity_uses": "1 tea towel/bib tail + small ball + 4 cones",
     "equipment_items": [
       "1 tea towel / bib tail",
       "1 small lightweight rubber ball",
       "10 blue cones"
     ],
-    "activity_uses": "1 tea towel / bib tail, 1 small lightweight rubber ball, 10 blue cones",
     "setup_time": "low",
     "fun": "high",
-    "setup": "Use 4 cones to mark a small safe area.",
-    "how": "Continuous tail transfer, no resetting.",
-    "notes": "Good short peak.",
+    "setup": "4 cones in a safe square.",
+    "how": "Continuous tail-transfer game. No resetting after every tag.",
+    "notes": "Use as a short fun peak. Keep safe and playful.",
     "theme": "chase",
     "auto_include": true
   },
@@ -325,12 +305,12 @@ const DEFAULT_ACTIVITIES = [
     "id": "shuttle-cone-memory",
     "title": "Shuttle Cone Memory Game",
     "section": "Brain & Movement",
-    "duration": 6,
-    "rounds": "3 rounds x 75 seconds",
+    "duration": 7,
+    "rounds": "3 rounds x 90 seconds",
     "round_details": [
-      "Round 1 \u2014 Touch the Code\nSetup: Set 4 numbered cones.\nDo: David calls a short code, e.g. 1-3-2. They touch cones in order and return.\nCoach: Start easy with 3 numbers.",
-      "Round 2 \u2014 Human Code\nSetup: Same 4 cones.\nDo: Each person becomes part of the code. Call 1-3-2-4 and they arrange themselves at those cone numbers in order.\nCoach: They work as a team.",
-      "Round 3 \u2014 Build the Code\nSetup: Put a small pile of yellow discs at each cone and a finish line.\nDo: Call one code once, e.g. 2-4-1-3. Team collects ONE disc from each cone in that order and lays them in a line at the finish.\nCoach: The finish line must match the code order."
+      "Round 1 \u2014 Touch the Code\nSetup: Set 4 blue cones in a line or square. Number them 1\u20134.\nDo: David calls a short code, e.g. 1-3-2. They touch those cones in order and return.\nCoach: Start with 3 numbers. Add 4 only if it is going well.\nEnd: Stop after 90 seconds.",
+      "Round 2 \u2014 Human Code\nSetup: Same 4 numbered cones.\nDo: Each person becomes part of the code. David calls 1-3-2-4 and they arrange themselves at those cone numbers in that order.\nCoach: They work as a team. If only 2\u20133 people, use shorter codes.\nEnd: Stop after 90 seconds.",
+      "Round 3 \u2014 Build the Code\nSetup: Put 3 yellow discs by each numbered cone and mark a finish line.\nDo: David calls one code once, e.g. 2-4-1-3. Team collects ONE disc from each cone in that order and lays them in a line at the finish.\nCoach: The line at the finish represents the code order. Same-colour discs are fine because the challenge is the sequence.\nEnd: Try 2\u20133 codes within the round."
     ],
     "intensity": "moderate",
     "locations": [
@@ -340,32 +320,31 @@ const DEFAULT_ACTIVITIES = [
     "min": 2,
     "max": 8,
     "requires_even": false,
-    "equipment": "10 blue cones, 50 yellow marker discs",
+    "equipment": "4 blue cones + approx. 12 yellow discs",
+    "activity_uses": "4 blue cones + approx. 12 yellow discs",
     "equipment_items": [
       "10 blue cones",
       "50 yellow marker discs"
     ],
-    "activity_uses": "10 blue cones, 50 yellow marker discs",
     "setup_time": "low",
     "fun": "high",
-    "setup": "Set 4 numbered cones; 3 discs by each cone for Round 3.",
-    "how": "Memory and movement: touch, become, build.",
-    "notes": "Distinct rounds, not repeated.",
+    "setup": "4 numbered cones. 3 discs by each cone for Round 3.",
+    "how": "Memory and movement: touch the code, become the code, build the code.",
+    "notes": "Distinct rounds. Good brain/body game without heavy impact.",
     "theme": "memory-code",
     "auto_include": true
   },
   {
-    "id": "crown-stack-challenge",
-    "title": "Crown Stack Challenge",
-    "section": "Teamwork & Laughter",
-    "duration": 5,
-    "rounds": "3 rounds x 60 seconds",
+    "id": "partner-pole-push",
+    "title": "Partner Pole Push",
+    "section": "Strength & Control",
+    "duration": 7,
+    "rounds": "2 rounds x 2 minutes",
     "round_details": [
-      "Round 1 \u2014 One Crown\nSetup: Everyone has one yellow disc on head. Target cone 5\u20138m away.\nDo: Walk to target and add disc to the stack. Return and repeat if time.\nCoach: Drop = pick up, dramatic bow, continue.",
-      "Round 2 \u2014 Double Crown\nSetup: Everyone tries two discs on head. One is fine if needed.\nDo: Deliver to stack again.\nCoach: No rushing. Wobbles are the fun.",
-      "Round 3 \u2014 Royal Commands\nSetup: One or two discs on head.\nDo: While walking, David calls: wave, bow, turn, freeze. Do it without dropping the crown.\nCoach: Everyone moves at the same time."
+      "Round 1 \u2014 Push & Resist\nSetup: Pairs hold one broom handle between them at chest height.\nDo: Partner A gently pushes while Partner B gives controlled resistance for 20\u201330 seconds, then swap.\nCoach: Small steps, strong posture, no jerking. If odd number, David joins or one person rotates.\nEnd: After 2 minutes.",
+      "Round 2 \u2014 Push Walk\nSetup: Same pairs and pole.\nDo: Pusher slowly walks partner backwards 3\u20134 small steps, then returns. Swap roles.\nCoach: This is controlled strength, not a wrestling match.\nEnd: After 2 minutes."
     ],
-    "intensity": "low/moderate",
+    "intensity": "moderate",
     "locations": [
       "indoor",
       "outdoor"
@@ -373,96 +352,60 @@ const DEFAULT_ACTIVITIES = [
     "min": 2,
     "max": 8,
     "requires_even": false,
-    "equipment": "50 yellow marker discs, 10 blue cones",
+    "equipment": "1\u20132 broom handles/bars",
+    "activity_uses": "1\u20132 broom handles/bars",
     "equipment_items": [
-      "50 yellow marker discs",
-      "10 blue cones"
+      "2 broom handles / bars"
     ],
-    "activity_uses": "50 yellow marker discs, 10 blue cones",
-    "setup_time": "low",
-    "fun": "high",
-    "setup": "Give each person 1\u20132 discs. Set one target cone/stack.",
-    "how": "Balance and laughter. Everyone works at once.",
-    "notes": "Better than partner cone transport.",
-    "theme": "balance-carry",
-    "auto_include": true
-  },
-  {
-    "id": "river-crossing-simple",
-    "title": "River Crossing",
-    "section": "Teamwork & Laughter",
-    "duration": 6,
-    "rounds": "3 rounds x 75 seconds",
-    "round_details": [
-      "Round 1 \u2014 Cross on Stones\nSetup: Lay yellow discs as stepping stones with safe close spacing.\nDo: Cross using only discs. Step off = go back one stone.\nCoach: Balance, not speed.",
-      "Round 2 \u2014 Move the Stone\nSetup: Use fewer discs.\nDo: Team moves the back disc to the front to create the next step.\nCoach: Only move when balanced and safe.",
-      "Round 3 \u2014 Team Crossing\nSetup: Same fewer-stones setup.\nDo: Whole team must get across. They can pass discs forward and help each other plan.\nCoach: If stuck, David adds one rescue disc."
-    ],
-    "intensity": "low/moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "50 yellow marker discs",
-    "equipment_items": [
-      "50 yellow marker discs"
-    ],
-    "activity_uses": "50 yellow marker discs",
-    "setup_time": "medium",
-    "fun": "high",
-    "setup": "Create a short river with discs as stones.",
-    "how": "Team balance/problem-solving. Keep spacing safe.",
-    "notes": "Use for teamwork without impact.",
-    "theme": "team-balance",
-    "auto_include": true
-  },
-  {
-    "id": "cone-curling",
-    "title": "Cone Curling",
-    "section": "Lower Intensity / Reset",
-    "duration": 5,
-    "rounds": "3 rounds x 60 seconds",
-    "round_details": [
-      "Round 1 \u2014 Closest Roll\nSetup: One blue cone target. Rolling line 4\u20136m away.\nDo: Each person rolls the small ball once. Closest wins.\nCoach: Mark best roll with a disc.",
-      "Round 2 \u2014 Zone Points\nSetup: Add scoring zones with discs: 1, 2, 3 points.\nDo: Each person gets one roll. Add team score.\nCoach: Accuracy beats power.",
-      "Round 3 \u2014 Beat the Score\nSetup: Same zones.\nDo: Group gets one roll each to beat Round 2 total.\nCoach: Everyone cheers the final roll."
-    ],
-    "intensity": "low",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "1 small lightweight rubber ball, 10 blue cones, 50 yellow marker discs",
-    "equipment_items": [
-      "1 small lightweight rubber ball",
-      "10 blue cones",
-      "50 yellow marker discs"
-    ],
-    "activity_uses": "1 small lightweight rubber ball, 10 blue cones, 50 yellow marker discs",
     "setup_time": "low",
     "fun": "medium",
-    "setup": "Rolling line, target cone, scoring zones.",
-    "how": "Low-intensity target game/downshift.",
-    "notes": "Use after a harder activity.",
-    "theme": "target-game",
+    "setup": "Pairs with a broom handle between them.",
+    "how": "Simple partner strength/control using the bars.",
+    "notes": "Use if the group looks ready for a strength/control block.",
+    "theme": "partner-strength",
+    "auto_include": true
+  },
+  {
+    "id": "partner-pole-pull",
+    "title": "Partner Pole Pull",
+    "section": "Strength & Control",
+    "duration": 7,
+    "rounds": "2 rounds x 2 minutes",
+    "round_details": [
+      "Round 1 \u2014 Pull & Resist\nSetup: Pairs hold one broom handle between them.\nDo: Partner A gently pulls while Partner B resists for 20\u201330 seconds, then swap.\nCoach: Shoulders down. Smooth effort. No sharp pulling.\nEnd: After 2 minutes.",
+      "Round 2 \u2014 Row Walk\nSetup: Same pairs.\nDo: One partner performs a gentle row while the other gives light resistance, then swap.\nCoach: Keep the movement slow and controlled.\nEnd: After 2 minutes."
+    ],
+    "intensity": "moderate",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 2,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "1\u20132 broom handles/bars",
+    "activity_uses": "1\u20132 broom handles/bars",
+    "equipment_items": [
+      "2 broom handles / bars"
+    ],
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Pairs with broom handle.",
+    "how": "Partner pulling/rowing strength without complicated setup.",
+    "notes": "Alternative to Partner Pole Push.",
+    "theme": "partner-strength",
     "auto_include": true
   },
   {
     "id": "slam-ball-power-pair",
     "title": "Slam Ball Power Pair",
-    "section": "Strength & Resistance",
-    "duration": 4,
-    "rounds": "3 rounds x 45 seconds",
+    "section": "Power",
+    "duration": 5,
+    "rounds": "3 rounds x 60 seconds",
     "round_details": [
-      "Round 1 \u2014 Slam & Count\nSetup: Two slam balls out. Two people work; others step-touch and count.\nDo: Workers do safe slams. Swap after 20\u201325 seconds.\nCoach: Counters encourage and keep moving.",
-      "Round 2 \u2014 Slam & Carry\nSetup: Same pairs.\nDo: After 3 slams, carry ball around one cone and back. Continue.\nCoach: Swap halfway.",
-      "Round 3 \u2014 Team Total\nSetup: Same setup.\nDo: Team total for 45 seconds. Two slam at a time, others count loudly.\nCoach: Quality over speed."
+      "Round 1 \u2014 Slam & Count\nSetup: Two slam balls out with safe spacing.\nDo: Two people slam. Others march/step-touch and count clean slams. Swap halfway.\nCoach: Everyone is involved: workers slam, others count and move.\nEnd: After 60 seconds.",
+      "Round 2 \u2014 Slam & Carry\nSetup: Same two slam balls plus one cone each.\nDo: After 3 slams, carry the ball around the cone and return. Swap halfway.\nCoach: Quality over speed. Safe lifting.\nEnd: After 60 seconds.",
+      "Round 3 \u2014 Team Total\nSetup: Same setup.\nDo: Team total for 60 seconds. Two slam at a time, others count loudly and keep moving.\nCoach: Stop before form gets messy.\nEnd: After 60 seconds."
     ],
     "intensity": "moderate/high",
     "locations": [
@@ -471,90 +414,30 @@ const DEFAULT_ACTIVITIES = [
     "min": 2,
     "max": 8,
     "requires_even": false,
-    "equipment": "Slam balls: 4kg + 7kg, 10 blue cones",
+    "equipment": "4kg + 7kg slam balls + 2 cones",
+    "activity_uses": "4kg + 7kg slam balls + 2 cones",
     "equipment_items": [
       "Slam balls: 4kg + 7kg",
       "10 blue cones"
     ],
-    "activity_uses": "Slam balls: 4kg + 7kg, 10 blue cones",
     "setup_time": "low",
     "fun": "medium",
     "setup": "Two slam stations with safe spacing.",
-    "how": "Short power block; everyone works/counts/moves.",
-    "notes": "Outdoor only optional power block.",
+    "how": "Short optional power block where nobody stands still.",
+    "notes": "Outdoor only. If not suitable, skip or replace.",
     "theme": "power-ball",
     "auto_include": true
   },
   {
-    "id": "partner-pole-push",
-    "title": "Partner Pole Push",
-    "section": "Strength & Resistance",
+    "id": "cone-curling",
+    "title": "Cone Curling",
+    "section": "Low Reset",
     "duration": 5,
-    "rounds": "2 rounds x 90 seconds",
+    "rounds": "3 rounds x 60 seconds",
     "round_details": [
-      "Round 1 \u2014 Push & Resist\nSetup: Pairs hold broom handle between them at chest height.\nDo: A gently pushes while B gives controlled resistance for 20\u201330s, then swap.\nCoach: Small steps, strong posture, no jerking.",
-      "Round 2 \u2014 Push Walk\nSetup: Same pairs.\nDo: Pusher slowly walks partner backwards 3\u20134 steps, then returns. Swap roles.\nCoach: Smooth and safe."
-    ],
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "2 broom handles / bars",
-    "equipment_items": [
-      "2 broom handles / bars"
-    ],
-    "activity_uses": "2 broom handles / bars",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Pair people. David joins if odd number.",
-    "how": "Partner strength/control using broom handles.",
-    "notes": "Optional strength activity.",
-    "theme": "partner-strength",
-    "auto_include": true
-  },
-  {
-    "id": "partner-pole-pull",
-    "title": "Partner Pole Pull",
-    "section": "Strength & Resistance",
-    "duration": 5,
-    "rounds": "2 rounds x 90 seconds",
-    "round_details": [
-      "Round 1 \u2014 Pull & Resist\nSetup: Pairs hold broom handle between them.\nDo: A gently pulls while B resists for 20\u201330s, then swap.\nCoach: Shoulders down, smooth effort.",
-      "Round 2 \u2014 Row Walk\nSetup: Same pairs.\nDo: One partner does gentle rowing action while the other gives light resistance, then swap.\nCoach: No sharp pulling."
-    ],
-    "intensity": "moderate",
-    "locations": [
-      "indoor",
-      "outdoor"
-    ],
-    "min": 2,
-    "max": 8,
-    "requires_even": false,
-    "equipment": "2 broom handles / bars",
-    "equipment_items": [
-      "2 broom handles / bars"
-    ],
-    "activity_uses": "2 broom handles / bars",
-    "setup_time": "low",
-    "fun": "medium",
-    "setup": "Pair people. David joins if odd number.",
-    "how": "Partner pull/row strength.",
-    "notes": "Optional strength activity.",
-    "theme": "partner-strength",
-    "auto_include": true
-  },
-  {
-    "id": "category-pass-mini",
-    "title": "Category Pass",
-    "section": "Mini Mission",
-    "duration": 1,
-    "rounds": "60 seconds",
-    "round_details": [
-      "60 seconds\nSetup: Loose circle or walking space.\nDo: David gives a category such as food, holiday, animal or TV. Catcher gives ONE answer, calls a name and passes.\nCoach: Keep them walking gently. No repeats if possible, but do not make it stressful."
+      "Round 1 \u2014 Closest Roll\nSetup: One blue cone target. Rolling line 4\u20136m away.\nDo: Each person rolls the small ball once. Closest to the target wins.\nCoach: Use one yellow disc to mark the best roll.\nEnd: After everyone has rolled 1\u20132 times.",
+      "Round 2 \u2014 Zone Points\nSetup: Add 3 scoring zones with yellow discs: 1, 2 and 3 points.\nDo: Each person gets one roll per turn. Add team score.\nCoach: Accuracy beats power.\nEnd: After 60 seconds.",
+      "Round 3 \u2014 Beat the Score\nSetup: Same zones.\nDo: Group gets one roll each to beat their Round 2 team total.\nCoach: Everyone cheers the final roll.\nEnd: After everyone has rolled."
     ],
     "intensity": "low",
     "locations": [
@@ -564,27 +447,29 @@ const DEFAULT_ACTIVITIES = [
     "min": 2,
     "max": 8,
     "requires_even": false,
-    "equipment": "1 small lightweight rubber ball",
+    "equipment": "1 small ball + 1 target cone + 6\u20138 yellow discs",
+    "activity_uses": "1 small ball + 1 target cone + 6\u20138 yellow discs",
     "equipment_items": [
-      "1 small lightweight rubber ball"
+      "1 small lightweight rubber ball",
+      "10 blue cones",
+      "50 yellow marker discs"
     ],
-    "activity_uses": "1 small lightweight rubber ball",
     "setup_time": "low",
     "fun": "medium",
-    "setup": "Loose circle.",
-    "how": "One-minute filler that is clearer than name passing.",
-    "notes": "Mini Mission only.",
-    "theme": "mini-category",
+    "setup": "Rolling line, target cone and 3 scoring zones.",
+    "how": "Low-intensity target game to downshift after harder work.",
+    "notes": "Keep as reset/downshift, not the main excitement.",
+    "theme": "target-game",
     "auto_include": true
   },
   {
     "id": "pass-parcel-mini",
     "title": "Pass the Parcel Movement",
     "section": "Mini Mission",
-    "duration": 1,
-    "rounds": "60 seconds",
+    "duration": 2,
+    "rounds": "2 minutes continuous",
     "round_details": [
-      "60 seconds\nSetup: Loose circle or walking space.\nDo: Pass the ball while walking. When timer buzzes, ball holder does the simple movement David calls: wave, march, toe taps or royal bow.\nCoach: You choose the movement. They do not invent it."
+      "2 minutes\nSetup: Loose circle or walking space. Small ball.\nDo: Pass the ball while walking. When David says STOP, ball holder performs the simple move David calls: 5 marches, 5 toe taps, big wave, royal bow, or turn around.\nCoach: You choose the move. They do not invent it. Restart passing straight away."
     ],
     "intensity": "low",
     "locations": [
@@ -594,16 +479,16 @@ const DEFAULT_ACTIVITIES = [
     "min": 2,
     "max": 8,
     "requires_even": false,
-    "equipment": "1 small lightweight rubber ball",
+    "equipment": "1 small lightweight ball",
+    "activity_uses": "1 small lightweight ball",
     "equipment_items": [
       "1 small lightweight rubber ball"
     ],
-    "activity_uses": "1 small lightweight rubber ball",
     "setup_time": "low",
     "fun": "medium",
-    "setup": "Loose circle.",
-    "how": "Short led movement filler.",
-    "notes": "Mini Mission only.",
+    "setup": "Loose circle/walking space.",
+    "how": "Short led movement filler. Clearer than vague name passing.",
+    "notes": "Use between setup-heavy activities only once per session.",
     "theme": "mini-ball",
     "auto_include": true
   },
@@ -611,10 +496,10 @@ const DEFAULT_ACTIVITIES = [
     "id": "quick-balance-mini",
     "title": "Quick Balance Challenge",
     "section": "Mini Mission",
-    "duration": 1,
-    "rounds": "60 seconds",
+    "duration": 2,
+    "rounds": "2 minutes continuous",
     "round_details": [
-      "60 seconds\nSetup: Each person has one yellow disc.\nDo: Balance the disc on head, shoulder or back of hand while walking slowly to a cone and back.\nCoach: If it drops, pick it up and continue. Keep it light."
+      "2 minutes\nSetup: Each person has one yellow disc. One cone 5\u20138m away.\nDo: Balance the disc on back of hand to the cone and back. Then try shoulder or head if safe.\nCoach: Drop = pick up and continue. Keep it light and funny. No rushing."
     ],
     "intensity": "low",
     "locations": [
@@ -624,30 +509,69 @@ const DEFAULT_ACTIVITIES = [
     "min": 2,
     "max": 8,
     "requires_even": false,
-    "equipment": "50 yellow marker discs, 10 blue cones",
+    "equipment": "1 yellow disc each + 1 cone",
+    "activity_uses": "1 yellow disc each + 1 cone",
     "equipment_items": [
       "50 yellow marker discs",
       "10 blue cones"
     ],
-    "activity_uses": "50 yellow marker discs, 10 blue cones",
     "setup_time": "low",
     "fun": "medium",
     "setup": "One cone out and back.",
-    "how": "Quick led balance filler.",
-    "notes": "Mini Mission only.",
+    "how": "Short balance filler with everyone moving at the same time.",
+    "notes": "Use once only. Not a full activity.",
     "theme": "mini-balance",
+    "auto_include": true
+  },
+  {
+    "id": "cool-down",
+    "title": "Cool Down & Stretch",
+    "section": "Cool Down",
+    "duration": 6,
+    "rounds": "6 minutes continuous",
+    "round_details": [],
+    "intensity": "low",
+    "locations": [
+      "indoor",
+      "outdoor"
+    ],
+    "min": 1,
+    "max": 8,
+    "requires_even": false,
+    "equipment": "None",
+    "activity_uses": "None",
+    "equipment_items": [],
+    "setup_time": "low",
+    "fun": "medium",
+    "setup": "Loose circle.",
+    "how": "Slow breathing, shoulder/neck reset, calves, hamstrings, quads, hips, back/side stretch. Keep it gentle.",
+    "notes": "Always last.",
+    "theme": "cooldown",
     "auto_include": true
   }
 ];
 let activities=loadActivities(),session=[],currentIndex=0,timerInterval=null,remaining=0;let audioCtx=null,audioUnlocked=false;function unlockAudio(){try{if(audioUnlocked)return;const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;audioCtx=new Ctx();if(audioCtx.state==="suspended")audioCtx.resume();audioUnlocked=true}catch(e){}}function playTone(freq,duration,start){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime+start;o.type="square";o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.18,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+duration);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+duration+0.03)}function playEndBuzzer(){try{if(!audioCtx)unlockAudio();if(!audioCtx)return;if(audioCtx.state==="suspended")audioCtx.resume();playTone(440,.18,0);playTone(330,.18,.22);playTone(440,.35,.44)}catch(e){}}function flashTimerDone(){document.body.classList.add("timer-alert");setTimeout(()=>document.body.classList.remove("timer-alert"),3000)}function timerDoneAlert(){playEndBuzzer();flashTimerDone();if(navigator.vibrate)navigator.vibrate([220,90,220,90,350])}
 function loadActivities(){try{const s=localStorage.getItem('dhgActivities');return s?JSON.parse(s):DEFAULT_ACTIVITIES}catch(e){return DEFAULT_ACTIVITIES}}function saveActivities(){localStorage.setItem('dhgActivities',JSON.stringify(activities))}
 function migrateSavedActivities(){
-  try{ activities = DEFAULT_ACTIVITIES.map(a => ({...a})); saveActivities(); }catch(e){}
+  try{
+    activities = DEFAULT_ACTIVITIES.map(a => ({...a}));
+    saveActivities();
+  }catch(e){}
 }
 migrateSavedActivities();
 
 function normaliseLocation(loc){return loc==='both'?['indoor','outdoor']:[loc]}function fits(a,n,loc){return a.locations.includes(loc)&&n>=a.min&&n<=a.max&&!a.archived&&!a.auto_exclude&&(a.auto_include!==false)&&(!a.requires_even||n%2===0)}function isHigh(a){return (a.intensity||'').includes('high')}
-function scoreActivity(a,loc,energy){let s=0;if(a.fun==='high')s+=5;if(a.fun==='medium')s+=2;if(a.setup_time==='low')s+=2;if(a.setup_time==='medium')s-=1;if(a.locations.length===2)s+=1;if(energy==='lighter'&&isHigh(a))s-=8;if(energy==='higher'&&isHigh(a))s+=2;return s;}
+function scoreActivity(a,loc,energy){
+  let s=0;
+  if(a.fun==='high')s+=5;
+  if(a.fun==='medium')s+=2;
+  if(a.setup_time==='low')s+=2;
+  if(a.setup_time==='medium')s-=1;
+  if(a.locations.length===2)s+=1;
+  if(energy==='lighter'&&isHigh(a))s-=8;
+  if(energy==='higher'&&isHigh(a))s+=2;
+  return s;
+}
 
 function plannedSeconds(a){
   return Math.round((Number(a.duration) || 1) * 60);
@@ -675,32 +599,122 @@ function timingText(a){
   return `${timeLabelFromSeconds(plannedSeconds(a))} continuous`;
 }
 function addSessionBuffer(seconds){
+  const mins = Math.max(1, Math.round(seconds/60));
   return {
-    id: "session-buffer-" + Date.now() + "-" + Math.random().toString(16).slice(2),
-    title: "Quick Reset",
-    section: "Mini Mission",
-    duration: Math.max(1, Math.round(seconds/60)),
-    rounds: `${Math.max(1, Math.round(seconds/60))} minute reset`,
+    id: "extra-cooldown-reset-" + Date.now(),
+    title: "Extra Cool Down / Reset",
+    section: "Cool Down",
+    duration: mins,
+    rounds: `${mins} minutes continuous`,
     intensity: "low",
     locations: ["indoor","outdoor"],
     min: 1,
-    max: 99,
+    max: 8,
     requires_even: false,
-    equipment: "Small ball optional",
+    equipment: "None",
+    activity_uses: "None",
+    equipment_items: [],
     setup_time: "low",
     fun: "medium",
-    setup: "Use this as a gentle reset while preparing the next activity.",
-    how: "Easy name pass, walk-and-talk, shoulder rolls, or light marching. Keep everyone warm but not tired.",
-    notes: "Use this short Mini Mission to keep the session moving and the total planned time at exactly 60 minutes."
+    setup: "Loose circle.",
+    how: "Use this as extra breathing, gentle walking, shoulder reset and easy stretches so the main session totals 60 minutes.",
+    notes: "Added automatically only if the selected cards are short.",
+    theme: "cooldown-extra"
   };
 }
 
-function choose(section,n,loc,used,energy,fallback=[]){let sections=[section,...fallback];let usedThemes=new Set(Array.from(used).map(id=>{const a=activities.find(x=>x.id===String(id).replace(/-\d+$/,''));return a&&a.theme;}).filter(Boolean));let pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id)&&!(a.theme&&usedThemes.has(a.theme)));if(energy==='lighter')pool=pool.filter(a=>!isHigh(a));if(!pool.length)pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));if(!pool.length)return null;pool.sort((a,b)=>scoreActivity(b,loc,energy)-scoreActivity(a,loc,energy));let pick=pool[Math.floor(Math.random()*Math.min(pool.length,3))];used.add(pick.id);return pick;}
-function maintenanceCard(n,loc,used=new Set()){let pool=activities.filter(a=>a.section==='Mini Mission'&&fits(a,n,loc)&&!used.has(a.id));if(!pool.length)pool=activities.filter(a=>a.section==='Mini Mission'&&fits(a,n,loc));return pool[Math.floor(Math.random()*pool.length)]||null;}
+function choose(section,n,loc,used,energy,fallback=[]){
+  let sections=[section,...fallback];
+  let usedThemes=new Set(Array.from(used).map(id=>{
+    const a=activities.find(x=>x.id===String(id).replace(/-\d+$/,''));
+    return a&&a.theme;
+  }).filter(Boolean));
+  let pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id)&&!(a.theme&&usedThemes.has(a.theme)));
+  if(energy==='lighter')pool=pool.filter(a=>!isHigh(a));
+  if(!pool.length)pool=activities.filter(a=>sections.includes(a.section)&&fits(a,n,loc)&&!used.has(a.id));
+  if(!pool.length)return null;
+  pool.sort((a,b)=>scoreActivity(b,loc,energy)-scoreActivity(a,loc,energy));
+  let pick=pool[0];
+  used.add(pick.id);
+  return pick;
+}
+function maintenanceCard(n,loc,used=new Set()){
+  let pool=activities.filter(a=>a.section==='Mini Mission'&&fits(a,n,loc)&&!used.has(a.id));
+  if(!pool.length)pool=activities.filter(a=>a.section==='Mini Mission'&&fits(a,n,loc));
+  let pick=pool[0]||null;
+  if(pick)used.add(pick.id);
+  return pick;
+}
 
-function fitSessionTo60(cards,n,loc,used,energy){const TARGET=60*60;let cool=cards.find(a=>a.id==='cool-down');let main=cards.filter(a=>a.id!=='cool-down'&&!a.bonus);const fills=[['Mini Mission',[]],['Lower Intensity / Reset',['Brain & Movement']],['Teamwork & Laughter',['Brain & Movement']],['Strength & Resistance',['Lower Intensity / Reset']]];let safety=0;while(mainSessionSeconds([...main,cool].filter(Boolean))<TARGET-60&&safety<20){const remaining=TARGET-mainSessionSeconds([...main,cool].filter(Boolean));let pick=null;for(const pair of fills){const cand=pair[0]==='Mini Mission'?maintenanceCard(n,loc,used):choose(pair[0],n,loc,used,energy,pair[1]);if(cand&&plannedSeconds(cand)<=remaining){pick=cand;break;}if(cand)used.delete(cand.id);}if(pick)main.push(pick);else break;safety++;}let total=mainSessionSeconds([...main,cool].filter(Boolean));if(total<TARGET)main.push(addSessionBuffer(TARGET-total));return [...main,cool].filter(Boolean);}
+function fitSessionTo60(cards,n,loc,used,energy){
+  const TARGET=60*60;
+  let total=mainSessionSeconds(cards);
+  if(total<TARGET){
+    cards.push(addSessionBuffer(TARGET-total));
+  }
+  return cards;
+}
 
-function buildSession(){const n=parseInt(document.getElementById('attendees').value,10),loc=document.getElementById('location').value,energy=document.getElementById('energy').value,used=new Set();const must=['breathing-reset','mobility-flow','light-bounce-footwork','story-ball'];let cards=must.map(id=>activities.find(a=>a.id===id)).filter(Boolean);must.forEach(id=>used.add(id));const plan=[['Teamwork & Laughter',['Brain & Movement']],['Brain & Movement',['Teamwork & Laughter']],['Mini Mission',[]],['Teamwork & Laughter',['Lower Intensity / Reset']],['Strength & Resistance',['Teamwork & Laughter']],['Mini Mission',[]],['Brain & Movement',['Lower Intensity / Reset']],['Lower Intensity / Reset',['Mini Mission']],['Teamwork & Laughter',['Strength & Resistance']],['Cool Down',[]]];plan.forEach(p=>{let pick=p[0]==='Mini Mission'?maintenanceCard(n,loc,used):choose(p[0],n,loc,used,energy,p[1]);if(pick){cards.push(pick);used.add(String(pick.id).replace(/-\d+$/,''));}});let mainCards=fitSessionTo60(cards,n,loc,used,energy);let b1=choose('Teamwork & Laughter',n,loc,used,energy,['Brain & Movement']);let b2=choose('Mini Mission',n,loc,used,energy,['Lower Intensity / Reset']);let bonusCards=[];if(b1)bonusCards.push({...b1,bonus:true});if(b2)bonusCards.push({...b2,bonus:true});let cool=mainCards.find(a=>a.id==='cool-down');let withoutCool=mainCards.filter(a=>a.id!=='cool-down');session=[...withoutCool,...bonusCards,cool].filter(Boolean);currentIndex=0;const bonusSeconds=bonusCards.reduce((sum,a)=>sum+plannedSeconds(a),0);document.getElementById('builder').classList.add('hidden');document.getElementById('libraryPanel').classList.add('hidden');document.getElementById('addPanel').classList.add('hidden');document.getElementById('sessionPanel').classList.remove('hidden');document.getElementById('sessionMeta').innerText=`${n} attending • ${loc} • 60-minute main session`+(bonusSeconds?` • bonus bank ${timeLabelFromSeconds(bonusSeconds)}`:'');showEquipmentChecklist();}
+function byId(id){return activities.find(a=>a.id===id);}
+function buildSession(){
+  const n=parseInt(document.getElementById('attendees').value,10),
+        loc=document.getElementById('location').value,
+        energy=document.getElementById('energy').value,
+        used=new Set();
+
+  let cards=[];
+  function add(id){
+    const a=byId(id);
+    if(a&&fits(a,n,loc)&&!used.has(id)){
+      cards.push(a);
+      used.add(id);
+      return true;
+    }
+    return false;
+  }
+  function addFirst(ids){
+    for(const id of ids){ if(add(id)) return true; }
+    return false;
+  }
+
+  add('breathing-reset');
+  add('mobility-flow');
+  add('light-bounce-footwork');
+  add('story-ball');
+
+  add('marker-flip-plus');
+  addFirst(['tail-tag-transfer','cone-curling']);
+  add('shuttle-cone-memory');
+  addFirst(['partner-pole-push','partner-pole-pull','cone-curling']);
+  add('pass-parcel-mini');
+  addFirst(loc==='outdoor' ? ['slam-ball-power-pair','cone-curling'] : ['cone-curling','partner-pole-pull']);
+  add('quick-balance-mini');
+
+  let cool=byId('cool-down');
+  if(cool)cards.push(cool);
+
+  cards=fitSessionTo60(cards,n,loc,used,energy);
+
+  // Bonus bank goes before cool down
+  let bonusCards=[];
+  const b1=choose('Teamwork & Laughter',n,loc,used,energy,['Lower Intensity / Reset','Strength & Control']);
+  const b2=choose('Mini Mission',n,loc,used,energy,['Lower Intensity / Reset']);
+  if(b1)bonusCards.push({...b1,bonus:true});
+  if(b2)bonusCards.push({...b2,bonus:true});
+
+  cool=cards.find(a=>a.id==='cool-down');
+  let withoutCool=cards.filter(a=>a.id!=='cool-down');
+  session=[...withoutCool,...bonusCards,cool].filter(Boolean);
+  currentIndex=0;
+
+  const bonusSeconds=bonusCards.reduce((sum,a)=>sum+plannedSeconds(a),0);
+  document.getElementById('builder').classList.add('hidden');
+  document.getElementById('libraryPanel').classList.add('hidden');
+  document.getElementById('addPanel').classList.add('hidden');
+  document.getElementById('sessionPanel').classList.remove('hidden');
+  document.getElementById('sessionMeta').innerText=`${n} attending • ${loc} • 60-minute main session`+(bonusSeconds?` • bonus bank ${timeLabelFromSeconds(bonusSeconds)}`:'');
+  showEquipmentChecklist();
+}
 
 /* DHG v3 alert system */
 let dhgAudioCtx = null;
@@ -969,7 +983,7 @@ function renderCard(){
     <div class="big-title">${esc(displayTitle(a))}</div>
     <div>${badges}</div>
     <div class="info-grid">
-      <div class="info"><b>Equipment</b>${esc(a.equipment)}</div>
+      <div class="info"><b>This activity uses</b>${esc(a.activity_uses || a.equipment)}</div>
       <div class="info"><b>Rounds / timing</b>${esc(timingText(a))}</div>
       <div class="info"><b>Setup</b>${esc(a.setup)}</div>
       <div class="info"><b>Coaching note</b>${esc(a.notes)}</div>
